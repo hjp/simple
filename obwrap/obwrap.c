@@ -1,5 +1,5 @@
 char obwrap_c_rcsid[] = 
-	"$Id: ";
+	"$Id: obwrap.c,v 1.3 2004-09-06 08:37:03 hjp Exp $";
 /* obwrap - wrapper for omniback scripts 
  *
  * Omniback leaves a lot of file descriptors open when executing its
@@ -15,6 +15,8 @@ char obwrap_c_rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
+#include <grp.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #define nonstderr stdout	/* Omniback bogosity */
@@ -39,7 +41,6 @@ int main(int argc, char **argv) {
 	    case 'u': {
 		char *p;
 		uid_t uid;
-		gid_t gid;
 
 		uid = strtol(optarg, &p, 0);
 		if (*p != '\0') {
@@ -79,6 +80,12 @@ int main(int argc, char **argv) {
     }
     if (optind == argc) usage();
 
+    /* close all filedescriptors except stdout,
+     * redirect stdin from /dev/null,
+     * stderr from stdout
+     */
+    close(0);
+    open("/dev/null", O_RDONLY);
     for (i = 2; i < open_max; i++) {
 	close(i);
     }

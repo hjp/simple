@@ -1,0 +1,23 @@
+.\" $Id: truncate.1,v 1.1 2000-08-23 13:03:42 hjp Exp $
+.\" $Log: truncate.1,v $
+.\" Revision 1.1  2000-08-23 13:03:42  hjp
+.\" Initial release
+.\"
+.\"
+.TH truncate 1
+.SH NAME
+truncate - truncate files to zero length
+.SH SYNOPSIS
+.B truncate
+[
+.I find-options
+] 
+.SH DESCRIPTION
+Truncate uses find with the specified options to find regular files.
+Each file is truncated to zero length, but owner, permissions, and
+last-modified date are preserved. If the user doesn't have write
+permissions for a file, a message is printed and the file is skipped.
+.SH DIAGNOSTICS
+Various error messages from the used commands.
+.SH AUTHOR
+Peter J. Holzer (hjp@wsr.ac.at)

@@ -17,7 +17,7 @@
 
 #include "hstrerror.h"
 
-char cvs_id[] = "$Id: fqdn.c,v 1.4 2002-09-19 20:13:48 hjp Exp $";
+char cvs_id[] = "$Id: fqdn.c,v 1.5 2004-05-17 18:13:46 hjp Exp $";
 
 char *cmnd;
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
 	if (!he) {
 	    fprintf(stderr, "%s: cannot resolve %s: %s\n",
-	    	    argv[0], argv[i], hstrerror(h_errno));
+	    	    cmnd, argv[i], hstrerror(h_errno));
 	    rc++;
 	    continue;
 	}

@@ -1,3 +1,4 @@
+include GNUmakevars
 include GNUmakerules
 
 all: waste

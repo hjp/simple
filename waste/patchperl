@@ -10,4 +10,5 @@ then
 	exit 1
 fi
 sed -e "s,@@@perl@@@,$perl," < $1 > $2
+chmod +x $2
 exit 0

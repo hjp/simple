@@ -1,6 +1,6 @@
 include GNUmakevars
 
-TARGETS = quotacheck quotastat quotasanitycheck
+TARGETS = quotacheck quotastat quotasanitycheck quotagraph
 all: $(TARGETS)
 
 clean:
@@ -11,7 +11,8 @@ distclean: clean
 
 install: $(SBINDIR) $(SBINDIR)/quotacheck $(SBINDIR)/quotastat \
 	$(SBINDIR)/dfree \
-	$(SBINDIR)/quotasanitycheck $(MAN8DIR)/quotasanitycheck.8
+	$(SBINDIR)/quotasanitycheck $(MAN8DIR)/quotasanitycheck.8 \
+	/usr/local/dfstat/quotagraph 
 
 %: %.pl customize
 	sh ./customize < $< > $@
@@ -26,5 +27,8 @@ customize: configure
 
 $(SBINDIR):
 	mkdir -p $@
+
+/usr/local/dfstat/%: %
+	$(INSTALL) -m 755 $^ $@
 
 include GNUmakerules

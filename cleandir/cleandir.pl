@@ -23,12 +23,18 @@ sub cleandir {
 	return;
     }
     my $std = lstat(".");
+    my $fs = $std->dev;
+
     for my $i (readdir(DIR)) {
 	if ($i eq "." || $i eq "..") {next}
 	if ($verbose > 2) {
 	    print STDERR "$0:", " " x $level, " checking $dir/$i\n";
 	}
 	my $st = lstat("$i");
+
+	# Skip anything on a different filesystem
+	next if ($st->dev != $fs);
+
 	if ($verbose > 3) {
 	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, "\n";
 	}
@@ -56,6 +62,7 @@ sub cleandir {
 				 " to ",
 				 $std1->dev, "/", $std1->ino,
 				 "\n";
+		    return ++$notremoved;
 		}
 		if ($remaining == 0 && $st->mtime < $since) {
 		    if ($verbose > 0) {
@@ -113,7 +120,14 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.1  2001-06-25 17:55:03  hjp
+# Revision 1.2  2002-02-25 23:33:29  hjp
+# Applied patch from "Chris L. Mason" <cmason@somanetworks.com> to prevent
+# filesystem traversal.
+#
+# Return immediately if we cannot chdir back to the directory we came
+# from.
+#
+# Revision 1.1  2001/06/25 17:55:03  hjp
 # Added configure script to figure out perl location.
 #
 # Revision 1.4  2000/11/20 21:10:08  hjp

@@ -6,7 +6,7 @@ all: scat $(patsubst %.msg, %.cat, $(wildcard *.msg))
 scat: scat.o
 scat.o: scat.c scat.h
 scat.h: scat.en.msg
-	gencat -H scat.h scat.en.cat scat.en.msg
+	gencat -H scat.h -o scat.en.cat scat.en.msg
 
 %.cat: %.msg
 	gencat $@ $^

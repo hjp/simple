@@ -1,11 +1,11 @@
-#!/usr/bin/perl
+#!@@@perl@@@
 #
-# $Id: quotasanitycheck,v 1.1 1998-09-17 07:30:12 hjp Exp $
-# $Log: quotasanitycheck,v $
-# Revision 1.1  1998-09-17 07:30:12  hjp
-# Made messages more user friendly (and less admin friendly).
-# allow grace time "NOT STARTED".
-# added quotasanitycheck.
+# $Id: quotasanitycheck.pl,v 1.1 1998-09-17 08:32:57 hjp Exp $
+# $Log: quotasanitycheck.pl,v $
+# Revision 1.1  1998-09-17 08:32:57  hjp
+# CVS cleanups:
+# 	Added quotasanitycheck.pl and removed quotasanitycheck.
+# 	Added quotasanitycheck
 #
 #
 # check quotas for sanity:
@@ -25,9 +25,12 @@ getopts('b:f:F:', \%opts);
 
 print "b=", $opts{'b'}, "f=", $opts{'f'}, "F=", $opts{'F'}, "\n"; 
 
+$blmin = $opts{'b'};
+$flmin = $opts{'f'};
+
 $hostname=`hostname`;
 chomp($hostname);
-open (DF, "/usr/local/bin/df |") or die "cannot call /usr/local/bin/df: $!";
+open (DF, "@@@df@@@ |") or die "cannot call @@@df@@@: $!";
 
 $fs = $/;
 undef ($/);
@@ -40,7 +43,7 @@ $df =~ s/\n[ \t]+/ /mg;
 for $ln (@df) {
     ($fs, $total, $used, $free, $pct, $mount) = split(/\s+/, $ln);
     if ($fs =~ m|^/dev/|) {
-	open REPQUOTA, "/usr/sbin/repquota $mount 2>/dev/null |" or die "cannot call /usr/sbin/repquota: $!";
+	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
 	while (<REPQUOTA>) {
 	    if  (/(\w+) \s+ [-+][-+] \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours)|)\s+
@@ -73,7 +76,7 @@ for $ln (@df) {
 		}
 
 		print "   file limit";
-		print " soft: $flsoft hard $flhard";
+		print " soft $flsoft hard $flhard";
 		if ($flsoft >= $flmin) {
 		    print " min_ok";
 		} else {

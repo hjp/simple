@@ -1,9 +1,10 @@
 include GNUmakevars
 
-all: quotacheck quotastat quotasanitycheck
+TARGETS = quotacheck quotastat quotasanitycheck
+all: $(TARGETS)
 
 clean:
-	rm -f quotacheck *.bak
+	rm -f $(TARGETS) *.bak core foo bar baz *.ps
 
 distclean: clean
 	rm -f customize

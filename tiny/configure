@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+echo "#!/bin/sh" > customize.$$
+echo "sed \\" > customize.$$
+chmod +x customize.$$
+
+################################################################
+# find a ln which understands -sf
+#
+touch find-printf.$$.1
+today=`date '+%Y-%m-%d'`
+for i in /bin/find /usr/bin/find /usr/local/bin/find
+do
+    if [ "`$i find-printf.$$.1 -printf '%TY-%Tm-%Td %p`" = "$today find-printf.$$.1" ]
+    then
+		echo $i works
+		find="$i"
+		break
+    fi
+done
+if [ -z "$find" ]
+then
+    echo could not find a working find command, sorry.
+    exit 1
+fi
+echo "  -e 's,@@@find@@@,$find,g' \\" >> customize.$$
+rm find-printf.$$.?
+
+
+################################################################
+# finish
+#	Add trailing newline and rename temp file to final name
+#
+echo  >> customize.$$
+
+mv customize.$$ customize
+

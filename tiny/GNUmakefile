@@ -1,4 +1,12 @@
 include GNUmakevars
+
+CONFDIR=../../configure
+
+all: configure dus fnp fnpa fnpc fqdn isodate psg 
+
+clean:
+	rm fnp fnpa fnpc customize
+
 install: \
 	$(BINDIR)/dus \
 	$(BINDIR)/fnp \
@@ -8,5 +16,18 @@ install: \
 	$(BINDIR)/isodate \
 	$(BINDIR)/psg \
 
+fnp: fnp.sh
+fnpa: fnpa.sh
+fnpc: fnpc.sh
+
+%: %.sh customize
+	sh ./customize < $< > $@
+	chmod +x $@
+
+customize: configure
+	sh ./configure
+
+configure: $(CONFDIR)/start $(CONFDIR)/find-printf $(CONFDIR)/finish
+	cat $^ > $@
 
 include GNUmakerules

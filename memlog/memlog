@@ -1,0 +1,7 @@
+#!/bin/sh
+now=`/bin/date '+%Y-%m-%dT%H:%M:%S'`
+egrep -i '^[a-z]+: +[0-9]+ kB$' /proc/meminfo |\
+while read a
+do
+    echo "$now $a"
+done >> /var/log/memlog

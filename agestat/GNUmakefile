@@ -1,6 +1,6 @@
 include GNUmakevars
 
-BINDIR=/usr/local/dfstat
+BINDIR=/usr/local/bin
 
 all: agestat
 

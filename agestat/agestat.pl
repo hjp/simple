@@ -1,24 +1,46 @@
-#!@@@perl@@@
+#!@@@perl@@@ -w
 
+use strict;
 use File::stat;
 use File::Find;
+use Getopt::Long;
 
-$now = time();
-$log_2 = log(2);
+my $now = time();
+my $log_2 = log(2);
+
+my %opts = ();
+GetOptions(\%opts, "atime", "mtime", "scale=s");
+my $scale;
+if (!defined($opts{scale})) {
+    $scale = 1;
+} elsif ($opts{scale} eq 'k') {
+    $scale = 1024;
+} elsif ($opts{scale} eq 'M') {
+    $scale = 1024*1024;
+} else {
+    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|m)]\n";
+    exit 1;
+}
+
+my @hist;
 
 sub wanted {
 
-    $st = lstat($_);
-    $age = $now - ($st->atime > $st->mtime ? $st->atime : $st->mtime );
+    my $st = lstat($_);
+    my $age = $now - (
+	$opts{atime} ? $st->atime :
+	$opts{mtime} ? $st->mtime :
+		       ($st->atime > $st->mtime ? $st->atime
+		                                : $st->mtime ));
     #print $File::Find::name, ": $age sec, ", $st->size, " bytes, ", $st->nlink, " links\n";
-    $log2age = log($age >= 1 ? $age : 1) / $log_2;
+    my $log2age = log($age >= 1 ? $age : 1) / $log_2;
     $hist[$log2age] += $st->size / $st->nlink;
 }
 
 sub logtime2str {
     my ($lt) = (@_);
 
-    $t = 1 << $lt;
+    my $t = 1 << $lt;
 
     if ($t < 60) {
 	return sprintf ("%5.1f s", $t);
@@ -38,16 +60,19 @@ find(\&wanted, @ARGV);
 
 print "\n\n";
 
-$sum = 0;
+my $sum = 0;
 
-for ($i = 0; $i <= $#hist; $i++) {
-    $sum += $hist[$i];
+for (my $i = 0; $i <= $#hist; $i++) {
+    $sum += ($hist[$i] || 0);
 }
 
-for ($i = 0; $i <= $#hist; $i++) {
-    $h = $hist[$i];
+
+my $c = 0;
+for (my $i = 0; $i <= $#hist; $i++) {
+    my $h = ($hist[$i] || 0);
     $c += $h;
-    printf("%2d\t%s\t%12.0f\t%5.1f\t%12.0f\t%5.1f\n", $i, logtime2str($i), $h, $h * 100 / $sum, $c, $c * 100 / $sum);
+    printf("%2d\t%s\t%12.0f\t%5.1f\t%12.0f\t%5.1f\n", $i,
+	   logtime2str($i), $h/$scale, $h * 100 / $sum, $c/$scale, $c * 100 / $sum);
 }
 print("#-------------------------------------------\n");
-printf("total\t\t%12.0f\t%5.1f\n",  $sum, $sum * 100 / $sum);
+printf("total\t\t%12.0f\t%5.1f\n",  $sum/$scale, $sum * 100 / $sum);

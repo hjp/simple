@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+#
+# $Id: list-mac-port,v 1.1 2003-12-03 13:51:47 hjp Exp $
+#
+# list mac/port mapping of a switch
+#
+use strict;
+
+sub usage {
+    print STDERR "Usage: $0 switch\n";
+    exit(1);
+}
+
+
+if (@ARGV != 1) {usage();}
+
+my $switch =  $ARGV[0];
+
+open (W, "snmpwalk $switch public 17.4.3.1.2 |")
+    or die "cannot invoke snmpwalk: $!";
+
+while(<W>) {
+    my ($p, $port) = split / = /;
+    my @p = split(/\./, $p);
+    my $mac = join(":", map { sprintf("%02x", $_) } @p[-6 .. -1]);
+
+    next if ($mac =~ /^00:e0:63:/);	# Ignore internal MAC addresses
+					# of Enterasys switches.
+    print "$switch\t$mac\t$port";
+}
+
+
+# $Log: list-mac-port,v $
+# Revision 1.1  2003-12-03 13:51:47  hjp
+# Added list-mac-port.
+# bay-mac-port is obsolete, won't be installed any more.
+#
+# Revision 1.1  2001/04/11 14:31:29  hjp
+# mac-port: convert mac address to switch port using snmp.
+#
+

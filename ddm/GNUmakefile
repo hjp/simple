@@ -1,4 +1,4 @@
-# $Id: GNUmakefile,v 1.3 2000-06-04 16:33:20 hjp Exp $
+# $Id: GNUmakefile,v 1.4 2002-03-18 20:49:54 hjp Exp $
 
 include GNUmakevars
 
@@ -8,7 +8,10 @@ ddm: ddm.o
 ddm.o: ddm.c
 
 clean:
-	rm ddm ddm.o
+	rm -f ddm ddm.o
+
+distclean: clean
+	rm -f cfg/mnttab.h
 
 install: $(SBINDIR)/ddm
 
@@ -20,7 +23,10 @@ include GNUmakerules
 -include ddm.d
 
 # $Log: GNUmakefile,v $
-# Revision 1.3  2000-06-04 16:33:20  hjp
+# Revision 1.4  2002-03-18 20:49:54  hjp
+# Added target distclean
+#
+# Revision 1.3  2000/06/04 16:33:20  hjp
 # Removed MNTTAB autodetection again as it seems to be already defined.
 # Don't skip rest of mountpoints if one is not accessible.
 # chdir to / while sleeping to avoid blocking automounters

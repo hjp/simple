@@ -9,6 +9,6 @@ for my $p (@ARGV) {
 	my $pp = join("/", @p[0..$i]);
 	$pp = "/" if $pp eq "";
 
-	system("/bin/ls", "-ld", $pp);
+	system("/bin/ls", "-ldi", $pp);
     }
 }

@@ -2,7 +2,7 @@ include GNUmakevars
 include GNUmakerules
 
 ftcp: ftcp.o
-	$(CC) $^ -lant -o $@
+	$(CC) $^ -o $@
 
 clean:
 	rm -f *.o ftcp core foo bar

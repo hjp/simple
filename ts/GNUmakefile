@@ -11,12 +11,13 @@ clean:
 install: \
 	$(BINDIR)/ts \
 
-ts: %: %.o
+ts: ts.bx
+	cp $< $@
 
+ts.bx: ts.o
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
-#	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
-
-%: %.pl customize
+%.plx: %.pl customize
 	sh ./customize < $< > $@
 	chmod +x $@
 

@@ -5,7 +5,7 @@ echo "sed \\" > customize.$$
 chmod +x customize.$$
 
 ################################################################
-# $Id: configure,v 1.3 2001-08-12 16:08:30 hjp Exp $
+# $Id: configure,v 1.4 2004-11-03 14:20:32 hjp Exp $
 # find a find which understands -printf
 #
 touch find-printf.$$.1
@@ -28,8 +28,8 @@ echo "  -e 's,@@@find@@@,$find,g' \\" >> customize.$$
 rm find-printf.$$.?
 
 # $Log: configure,v $
-# Revision 1.3  2001-08-12 16:08:30  hjp
-# Automatic rebuild of configure.
+# Revision 1.4  2004-11-03 14:20:32  hjp
+# Added check for perl.
 #
 # Revision 1.2  2001/03/19 22:50:28  hjp
 # Fixed description.
@@ -37,6 +37,26 @@ rm find-printf.$$.?
 # Revision 1.1  2001/03/19 22:44:39  hjp
 # *** empty log message ***
 #
+################################################################
+# find a working perl:
+#
+for i in /usr/bin/perl /usr/local/bin/perl /usr/bin/perl5 /usr/local/bin/perl5
+do
+    if $i -e 'exit ($] < 5.000)'
+    then
+	echo $i works
+	perl="$i"
+	break
+    fi
+done
+if [ -z "$perl" ]
+then
+    echo could not find a working perl command, sorry.
+    exit 1
+fi
+echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize.$$
+
+
 ################################################################
 # finish
 #	Add trailing newline and rename temp file to final name

@@ -3,6 +3,7 @@ use strict;
 use File::stat;
 
 my $verbose = 0;
+my $nop = 0;
 
 sub usage {
     print STDERR "Usage: $0 [-d days] dir ...\n";
@@ -10,37 +11,46 @@ sub usage {
 }
 
 sub cleandir {
-    my ($dir, $since) = (@_);
+    my ($dir, $since, $level) = (@_);
     my $notremoved = 0;
 
-    if ($verbose) {
-	print STDERR "$0: cleandir $dir $since {\n";
+    if ($verbose > 1) {
+	print STDERR "$0:", " " x $level, " cleandir $dir $since {\n";
     }
     if (!opendir(DIR, $dir)) {
-	printf STDERR "$0: cannot opendir $dir: $!";
+	printf STDERR "$0:", " " x $level, " cannot opendir $dir: $!";
 	return;
     }
     for my $i (readdir(DIR)) {
 	if ($i eq "." || $i eq "..") {next}
-	if ($verbose) {
-	    print STDERR "$0: checking $dir/$i\n";
+	if ($verbose > 2) {
+	    print STDERR "$0:", " " x $level, " checking $dir/$i\n";
 	}
 	my $st = lstat("$dir/$i");
-	if ($verbose) {
-	    print STDERR "$0: mtime=", $st->mtime, " atime=", $st->atime, "\n";
+	if ($verbose > 3) {
+	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, "\n";
 	}
 	if (-d _) {
 	    
-	    if (cleandir("$dir/$i", $since) == 0 && $st->mtime < $since) {
+	    if (cleandir("$dir/$i", $since, $level+1) == 0 && $st->mtime < $since) {
 		if (rmdir("$dir/$i")) {next}
 	    } 
 	} elsif ($st->mtime < $since && $st->atime < $since) {
-	    if (unlink("$dir/$i")) {next}
+	    if ($nop) {
+		print "would remove $dir/$i\n";
+	    } else {
+		if ($verbose > 0) {
+		    print STDERR "$0:", " " x $level, " removing $dir/$i\n";
+		}
+		if (unlink("$dir/$i")) {next}
+		print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!/$i\n";
+	    }
+	    
 	} 
 	$notremoved++;
     }
-    if ($verbose) {
-	print STDERR "$0: cleandir: $notremoved }\n";
+    if ($verbose > 1) {
+	print STDERR "$0:", " " x $level, " cleandir: $notremoved }\n";
     }
     return $notremoved;
 }
@@ -54,8 +64,10 @@ sub main {
 	    $since = time() - $days * 86400;
 	} elsif ($i eq "-v") {
 	    $verbose++;
+	} elsif ($i eq "-n") {
+	    $nop++;
 	} else {
-	    cleandir($i, $since);
+	    cleandir($i, $since, 0);
 	}
     }
     exit(0);

@@ -2,8 +2,9 @@
  *	Fortune -- Print one fortune out of an indexed fortune file
  */
 
-static char fortune_c_rcsid[] = "$Id: fortune.c,v 3.3 1992-03-24 11:15:45 hjp Exp $";
+static char fortune_c_rcsid[] = "$Id: fortune.c,v 3.4 1994-01-08 18:05:00 hjp Exp $";
 
+#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -16,13 +17,68 @@ static char fortune_c_rcsid[] = "$Id: fortune.c,v 3.3 1992-03-24 11:15:45 hjp Ex
 
 #include <ant/io.h>
 #include <ant/string.h>
+#include <ant/globals.h>
 
 /*	The following parameters will have to be adapted to your system	*/
 #define DELIMITER	"%%\n"
 #define MAXLINE		(80 + 1 + 1)
 char * fortunefile	= "/usr/lib/fortune.dat";
 char indexfile [PATH_MAX] = "/usr/lib/fortune.idx";
+#define RECLEN		4	/* length of a record in the index
+				 * file. This would normally be the 
+				 * size of a long, but could be more
+				 * or less if you want the program
+				 * run on systems with different lengths
+				 * of a long and share the same index
+				 * file.
+				 */
 /*	The rest should be generic	*/
+
+
+
+void fwritelong (FILE *fp, long offset, long value) {
+	unsigned char c [RECLEN];
+
+	assert (value < (1UL << (8 * RECLEN - 1)));
+
+	if (fseek (fp, offset, SEEK_SET) != 0) {
+		eprintf ("%s: cannot seek to %ld in %s: %s\n",
+			 cmnd, offset, indexfile, strerror (errno));
+		exit (1);
+	}
+
+	c [0] = value & 0xFF;
+	c [1] = (value >> 8) & 0xFF;
+	c [2] = (value >> 16) & 0xFF;
+	c [3] = (value >> 24) & 0xFF;
+
+	if (fwrite (c, RECLEN, 1, fp) != 1) {
+		eprintf ("%s: cannot write to %s: %s\n",
+			 cmnd, indexfile, strerror (errno));
+		exit (1);
+	}
+}
+
+long freadlong (FILE *fp, long offset) {
+	unsigned char	c [RECLEN];
+	unsigned long	value;
+
+	if (fseek (fp, offset, SEEK_SET) != 0) {
+		eprintf ("%s: cannot seek to %ld in %s: %s\n",
+			 cmnd, offset, indexfile, strerror (errno));
+		exit (1);
+	}
+
+	if (fread (c, RECLEN, 1, fp) != 1) {
+		eprintf ("%s: cannot write to %s: %s\n",
+			 cmnd, indexfile, strerror (errno));
+		exit (1);
+	}
+
+	value = c [0] + (c [1] << 8) + (c [2] << 16) + (c [3] << 24);
+	return value > LONG_MAX ? - (long) (- value) : value;
+}
+
 
 	int
 main(
@@ -31,7 +87,9 @@ main(
 ){
 	FILE 		* ffp, * ifp;
 	char		* p;
-	long		pos,
+	long		pos, ipos,	/* position in fortune and
+					 * index file 
+					 */
 			cnt,		/* Number of fortunes in the file
 					 */
 			nr,		/* number of fortune to read	*/
@@ -41,10 +99,12 @@ main(
 	struct stat	statbuf;
 	char		line [MAXLINE];
 
+	cmnd = argv [0];
+
 	if (argc >= 2){
 		fortunefile = argv [1];
 		strncpy (indexfile, argv [1], PATH_MAX);
-		if (p = strrchr (indexfile, '.')) {
+		if ((p = strrchr (indexfile, '.'))) {
 			strcpy (p, ".idx");
 		} else {
 			strcat (indexfile, ".idx");
@@ -94,17 +154,17 @@ main(
 			exit (3);
 		}
 		cnt = 0;
-		fwrite (&cnt, sizeof (long), 1, ifp);
-		fseek (ifp, sizeof (long), SEEK_CUR); /* leave position	intact */
+		fwritelong (ifp, 0, cnt);
+		ipos = RECLEN * 2;
 		while (fgets (line, sizeof (line), ffp)) {
 			if (STREQ (line, DELIMITER)) {
 				pos = ftell (ffp);
-				fwrite (&pos, sizeof (long), 1, ifp);
+				fwritelong (ifp, ipos, pos);
 				++ cnt;
+				ipos += RECLEN;
 			}
 		}
-		fseek (ifp, 0, SEEK_SET);
-		fwrite (&cnt, sizeof (long), 1, ifp);
+		fwritelong (ifp, 0, cnt);
 		fclose (ifp);
 		fclose (ffp);
 	}
@@ -125,23 +185,20 @@ main(
 	}
 
 	/*	Get number of entries	*/
-	fread (&cnt, sizeof (long), 1, ifp);
+	cnt = freadlong (ifp, 0);
 
 	if (cnt == 0) {
 		eprintf ("%s: empty fortune file\n", argv [0]);
 		exit (6);
 	}
 
-	fseek (ifp, sizeof (long), SEEK_SET);
-	fread (&nr, sizeof (long), 1, ifp);
+	nr = freadlong (ifp, RECLEN);
 	nr ++;
 	if (nr >= cnt) nr = 0;
-	fseek (ifp, sizeof (long), SEEK_SET);
-	fwrite (&nr, sizeof (long), 1, ifp);
+	fwritelong (ifp, RECLEN, nr);
 
 	/* Now look for the start of the fortune in the index file	*/
-	fseek (ifp, (nr + 2) * sizeof (long), SEEK_SET);
-	fread (&pos, sizeof (long), 1, ifp);
+	pos = freadlong (ifp, (nr + 2) * RECLEN);
 
 	/* And seek to it in the fortune file	*/
 	fseek (ffp, pos, SEEK_SET);

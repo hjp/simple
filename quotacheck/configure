@@ -30,14 +30,14 @@ echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize.$$
 for i in /bin/df /usr/bin/df /usr/bin/bdf /usr/sbin/df /usr/local/bin/df
 do
     a=`$i | awk 'NR == 1 {print $2}'`
-    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" ]
+    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" -o "$a" = "1k-blocks" ]
     then
 	echo $i works
 	df="$i"
 	break
     fi
     a=`$i -k | awk 'NR == 1 {print $2}'`
-    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" ]
+    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" -o "$a" = "1k-blocks" ]
     then
 	echo $i -k works
 	df="$i -k"
@@ -50,8 +50,6 @@ then
     exit 1
 fi
 echo "  -e 's,@@@df@@@,$df,g' \\" >> customize.$$
-
-
 ################################################################
 # find repquota:
 #	We don't try to check whether the output is useful,
@@ -104,7 +102,7 @@ fi
 echo "  -e 's,@@@sendmail@@@,$sendmail,g' \\" >> customize.$$
 
 ################################################################
-# $Id: configure,v 1.4 2004-11-30 09:27:01 hjp Exp $
+# $Id: configure,v 1.5 2005-03-29 10:03:14 hjp Exp $
 # find scp command
 #
 touch scp.test.$$
@@ -131,9 +129,11 @@ fi
 echo "  -e 's,@@@scp@@@,$scp,g' \\" >> customize.$$
 
 # $Log: configure,v $
-# Revision 1.4  2004-11-30 09:27:01  hjp
-# Add check for scp to configure. Added rules to makefile to automatically
-# rebuild configure.
+# Revision 1.5  2005-03-29 10:03:14  hjp
+# check for df changed - rebuilt.
+#
+# Revision 1.1  2005/01/07 16:01:34  hjp
+# Added test for scp.
 #
 ################################################################
 # finish

@@ -1,10 +1,10 @@
-include GNUmakerules
 include GNUmakevars
+include GNUmakerules
 
-count:
+rcstell:
 
-install: $(ROOT)/usr/local/bin/rcstell \
-	 $(ROOT)/usr/local/bin/rcsinfo \
+install: /usr/local/bin/rcstell \
+	 /usr/local/bin/rcsinfo \
 
 
 install_all:
@@ -14,10 +14,10 @@ install_all:
 	$(MAKE) install ROOT=/nfs/ihssv
 	$(MAKE) install ROOT=/nfs/wsrtest
 
-$(ROOT)/usr/local/bin/rcsinfo: $(ROOT)/usr/local/bin/rcstell
+/usr/local/bin/rcsinfo: /usr/local/bin/rcstell
 	ln -s  $< $@
 
-$(ROOT)/usr/local/man/man8/%.8: %.man
+/usr/local/man/man8/%.8: %.man
 	$(INSTALL) $< $@
 
 clean:

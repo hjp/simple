@@ -10,9 +10,7 @@ my $hostname;
 sub warnmsg {
     my ($mount, $usage, $soft, $hard, $grace, $unit, $user) = @_;
     my %dosdrv = (
-	'/wifosv/dosprogs' => 'H:',
 	'/wsrdb/users'     => 'J:',
-	'/wifosv/users'    => 'K:',
 	'/usr/local/www'   => 'W:',
     );
 
@@ -44,13 +42,15 @@ sub warnmsg {
 	    "\n" .
 	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
 	    "http://sww.wsr.ac.at/intranet/quotas/$user$mount_t.gif ansehen. \n" .
-	    "Die Quotas die Sie verwendet haben werden rot angezeigt. Außerdem zeigen\n" .
-	    "die Softquotas, die Grenze an, die Sie überschritten haben und die Hardquotas\n" .
-	    "die Obergrenze, die Sie nicht überschreiten können. \n" .
+	    "Der Graph zeigten den verbrauchten Platz ("used") sowie die beiden\n" .
+	    "Quotas ("soft" und "hard")\n" .
+	    "Die Softquota können Sie kurzfristig (bis zu einer Woche) überschreiten\n" .
+	    "die Hardquota nicht.\n" .
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
 	    "Systemadministratoren unterstützen:\n" .
 	    "Peter Holzer, hjp\@wsr.ac.at, Kl. 786\n" .
+	    "Gina Lanik, gina\@wsr.ac.at, Kl. 738\n" .
 	    "Michael Demelbauer, michael\@wsr.ac.at, Kl. 787\n";
     return $msg;
 }
@@ -79,13 +79,16 @@ sub sendmail
     }
     if ($opts{'a'}) {
 	print SENDMAIL "To: <system\@wsr.ac.at>\r\n";
-	print SENDMAIL "Subject: User $user: Disk Quotas überschritten\r\n";
+	print SENDMAIL "Subject: User $user: Disk Quotas =?iso-8859-1?Q?=FCberschritten?=\r\n";
     } else {
 	print SENDMAIL "To: <$user\@wsr.ac.at>\r\n";
 	print SENDMAIL "Cc: <system\@wsr.ac.at>\r\n";
-	print SENDMAIL "Subject: Disk Quotas überschritten\r\n";
+	print SENDMAIL "Subject: Disk Quotas =?iso-8859-1?Q?=FCberschritten?=\r\n";
        
     }
+    print SENDMAIL "MIME-Version: 1.0\r\n";
+    print SENDMAIL "Content-Type: text/plain; charset=iso-8859-1\r\n";
+    print SENDMAIL "Content-Encoding: 8bit\r\n";
     print SENDMAIL "Reply-To: <system\@wsr.ac.at>\r\n";
     print SENDMAIL "\r\n";
     print SENDMAIL "$msg\r\n";

@@ -1,8 +1,12 @@
 include GNUmakevars
 include GNUmakerules
 
-all: gethostbyname
-install: $(BINDIR)/gethostbyname
+all: gethostbyname fqdn
+install: \
+	$(BINDIR)/gethostbyname \
+	$(BINDIR)/axfr \
+	$(BINDIR)/fqdn \
+
 
 clean:
 	rm -f *.bak *.o core gethostbyname
@@ -15,6 +19,14 @@ cfg/%:
 
 gethostbyname: gethostbyname.o hstrerror.o
 
+fqdn: fqdn.o hstrerror.o
+
 hstrerror.o: cfg/have_hstrerror.h
+
+axfr:
+
+%: %.pl
+	cp $< $@
+	chmod +x $@
 
 -include *.d

@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+while(<>) {
+	if (/^\t\t\t( [0-9a-f]{2,4})+$/) {
+		@hex = split;
+		foreach $i (@hex) {
+			@c = pack("H4", $i);
+			foreach $j (@c) {
+				print "$j";
+			}
+		}
+		print "\n";
+	} else {
+		print
+	}
+}

@@ -56,10 +56,27 @@ do {
 
 $socket || die "Unable to open socket after $retry_count retries.";
 
-while (<STDIN>) {
-  print $socket $_;
-}
+for (;;) {
+    my ($rin, $win, $ein);
+    my ($rout, $wout, $eout);
+    $rin = $win = $ein = '';
+    vec($rin,fileno(STDIN),1) = 1;
+    vec($rin,fileno($socket),1) = 1;
+    $ein = $rin | $win;
 
+    my ($nfound,$timeleft) =
+    	select($rout=$rin, $wout=$win, $eout=$ein, $timeout);
+    if (vec($rout,fileno(STDIN),1)) {
+	sysread(STDIN, $buf, 1024) or last;
+	print $socket $buf
+	    or die "${config{'printer_ip'}}:${config{'port'}}: $!";
+    }
+    if (vec($rout,fileno($socket),1)) {
+	sysread($socket, $buf, 1024) or last;
+	print STDERR "$0: ${config{'printer_ip'}}:${config{'port'}}: $buf\n";
+    }
+}
+	
 close($socket);
 
 

@@ -1,5 +1,5 @@
 char ddm_c_rcs_id[] =
-    "$Id: ddm.c,v 1.4 2000-06-04 16:33:21 hjp Exp $";
+    "$Id: ddm.c,v 1.5 2000-09-07 10:12:35 hjp Exp $";
 /* 
  * ddm - disk delay monitor
  *
@@ -7,8 +7,10 @@ char ddm_c_rcs_id[] =
  * the equivalent of an ls -l.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,6 +21,10 @@ char ddm_c_rcs_id[] =
 #include <unistd.h>
 
 #include <ant/da.h>
+#include <ant/io.h>
+#include <ant/globals.h>
+
+typedef enum { MODE_NONE, MODE_ARGS, MODE_MNTTAB, MODE_DIRFILE } modeT;
 
 static double gettimestamp(void) {
     struct timeval tm;
@@ -27,68 +33,141 @@ static double gettimestamp(void) {
     return tm.tv_sec + tm.tv_usec/1E6;
 }
 
+static void usage(void) {
+    fprintf(stderr, "Usage: %s [-d dirfile | -m mnttab | directory ...  ]\n",
+	    cmnd);
+    exit(1);
+}
+
+void printtimestamp (const char *fmt, ...) {
+    static double lts = 0;
+    double ts = gettimestamp();
+    va_list ap;
+
+    fprintf(stderr, "%s: %.6f: %.6f: ", cmnd, ts, ts - lts);
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    lts = ts;
+}
+
 int main(int argc, char**argv) {
     char **dirs = NULL;
-    char **entries = NULL;
+    modeT mode = MODE_NONE;
+    int nr_dirs;
+    int c;
+    char *filename = NULL;
+
+    cmnd = argv[0];
+
+    while ((c = getopt(argc, argv, "d:m:")) != EOF) {
+	switch (c) {
+	    case 'd':
+		mode = MODE_DIRFILE;
+		filename = optarg;
+		break;
+	    case 'm':
+		mode = MODE_MNTTAB;
+		filename = optarg;
+		break;
+	    case '?':
+		usage();
+	    default:
+		assert(0);
+	}
+    }
+
+    if (mode == MODE_NONE) {
+	if (optind == argc) {
+	    mode = MODE_MNTTAB;
+	    filename = MNTTAB;
+	} else {
+	    mode = MODE_ARGS;
+	    dirs = argv + optind;
+	    nr_dirs = argc - optind;
+	}
+    } else {
+	if (optind != argc) usage();
+    }
+
 
     for (;;) {
-	FILE *mtp;
-	struct mntent *me;
-	double ts; 
 	int i;
-	int nr_dirs;
 	int sleeptime;
 
 	/* Get list of directories 
 	 */
-	ts = gettimestamp();
-	fprintf(stderr, "%s: %.6f: open %s\n", argv[0], ts, MNTTAB);
-	if ((mtp = setmntent(MNTTAB, "r")) == NULL) {
-	    fprintf(stderr, "%s: cannot open %s: %s\n",
-		    argv[0], MNTTAB, strerror(errno));
-	    exit(1);
-	}
-	for (i = 0;(me = getmntent(mtp)); i++) {
-	    DA_MKIND_INI(dirs, i, NULL);
-	    if (dirs[i]) free(dirs[i]);
-	    dirs[i] = strdup(me->mnt_dir);
-	    ts = gettimestamp();
-	    fprintf(stderr, "%s: %.6f: mountpoint %s\n",
-		    argv[0], ts, dirs[i]);
-	}
-	endmntent(mtp);
+	switch (mode) {
+	    case MODE_MNTTAB: {
+		FILE *mtp;
+		struct mntent *me;
 
-	nr_dirs = i;
+		printtimestamp("open %s\n", filename);
+		if ((mtp = setmntent(filename, "r")) == NULL) {
+		    fprintf(stderr, "%s: cannot open %s: %s\n",
+			    argv[0], filename, strerror(errno));
+		    exit(1);
+		}
+		for (i = 0;(me = getmntent(mtp)); i++) {
+		    DA_MKIND_INI(dirs, i, NULL);
+		    if (dirs[i]) free(dirs[i]);
+		    dirs[i] = strdup(me->mnt_dir);
+		    printtimestamp("mountpoint %s\n", dirs[i]);
+		}
+		endmntent(mtp);
+
+		nr_dirs = i;
+		break;
+	    }
+	    case MODE_DIRFILE: {
+		FILE *fp;
+		char *p;
+
+		printtimestamp("open %s\n", filename);
+		fp = efopen(filename, "r");
+		for (i = 0;(p = getline(fp)); i++) {
+		    DA_MKIND_INI(dirs, i, NULL);
+		    if (dirs[i]) free(dirs[i]);
+		    dirs[i] = strdup(p);
+		    printtimestamp("directory %s\n", dirs[i]);
+		}
+		efclose(fp);
+
+		nr_dirs = i;
+		break;
+	    }
+	    case MODE_ARGS:
+		break;
+	    default:
+		assert(0);
+	}
+
 
 	/* Now read them
 	 */
 	for (i = 0; i < nr_dirs; i++) {
 	    int j;
+	    char **entries = NULL;
 	    int nr_entries;
 	    DIR *dp;
 	    struct dirent *de;
 
-	    fprintf(stderr, "%s: %.6f: start %s\n",
-		    argv[0], gettimestamp(), dirs[i]);
+	    printtimestamp("start %s\n", dirs[i]);
 	    if (chdir(dirs[i]) == -1) {
-		fprintf(stderr, "%s: %.6f: chdir %s failed: %s\n",
-			argv[0], gettimestamp(), dirs[i], strerror(errno));
+		printtimestamp("chdir %s failed: %s\n", dirs[i], strerror(errno));
 		continue;
 	    }
-	    fprintf(stderr, "%s: %.6f: chdir %s ok\n",
-		    argv[0], gettimestamp(), dirs[i]);
+	    printtimestamp("chdir %s ok\n", dirs[i]);
 
 	    if ((dp = opendir(".")) == NULL) {
-		fprintf(stderr, "%s: %.6f: opendir %s failed: %s\n",
-			argv[0], gettimestamp(), dirs[i], strerror(errno));
+		printtimestamp("opendir %s failed: %s\n", dirs[i], strerror(errno));
 		continue;
 	    }
 	    for (j = 0;(de = readdir(dp)); j++) {
 		DA_MKIND_INI(entries, j, NULL);
 		if (entries[j]) free(entries[j]);
 		entries[j] = strdup(de->d_name);
-		fprintf(stderr, "%s: %.6f: entry %s\n",
-			argv[0], gettimestamp(), entries[j]);
+		printtimestamp("entry %s\n", entries[j]);
 	    }
 	    closedir(dp);
 	    nr_entries = j;
@@ -96,16 +175,14 @@ int main(int argc, char**argv) {
 	    for (j = 0; j < nr_entries; j++) {
 		struct stat st;
 		stat (entries[j], &st);
-		fprintf(stderr, "%s: %.6f: stat entry %s\n",
-			argv[0], gettimestamp(), entries[j]);
+		printtimestamp("stat entry %s\n", entries[j]);
 	    }
 	}
 
 	chdir("/");
 
 	sleeptime = rand() * 3600.0 / RAND_MAX;
-	fprintf(stderr, "%s: %.6f: sleeping %d seconds\n",
-		argv[0], gettimestamp(), sleeptime);
+	printtimestamp("sleeping %d seconds\n", sleeptime);
 	sleep(sleeptime);
     }
 	    
@@ -115,7 +192,10 @@ int main(int argc, char**argv) {
 
 /* 
  * $Log: ddm.c,v $
- * Revision 1.4  2000-06-04 16:33:21  hjp
+ * Revision 1.5  2000-09-07 10:12:35  hjp
+ * Added alternate ways to specify directories to be monitored.
+ *
+ * Revision 1.4  2000/06/04 16:33:21  hjp
  * Removed MNTTAB autodetection again as it seems to be already defined.
  * Don't skip rest of mountpoints if one is not accessible.
  * chdir to / while sleeping to avoid blocking automounters

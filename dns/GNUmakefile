@@ -1,5 +1,4 @@
 include GNUmakevars
-include GNUmakerules
 
 all: gethostbyname fqdn
 install: \
@@ -28,5 +27,12 @@ axfr:
 %: %.pl
 	cp $< $@
 	chmod +x $@
+
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
+include GNUmakerules
 
 -include *.d

@@ -32,8 +32,8 @@ for $ln (@df) {
 	    if (!/\b\d+\b/) {
 		#print "header: $_";
 	    } elsif  (/(\w+) \s+ [-+][-+] \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+(|NOT\sSTARTED|EXPIRED|\d+(?:\.\d+)?\ ?(?:days|hours))\s+
-	         (\d+)\s+(\d+)\s+(\d+)\s+(|NOT\sSTARTED|EXPIRED|\d+(?:\.\d+)?\ ?(?:days|hours))
+	         (\d+)\s+(\d+)\s+(\d+)\s+(|NOT\sSTARTED|EXPIRED|\d+(?:\.\d+)?\ ?(?:days|hours)|\d+:\d+)\s+
+	         (\d+)\s+(\d+)\s+(\d+)\s+(|NOT\sSTARTED|EXPIRED|\d+(?:\.\d+)?\ ?(?:days|hours)|\d+:\d+)
 		 /x) {
 		print STAT "$datetime\t$mount\t$1\t$2\t$3\t$4\t$6\t$7\t$8\n";
 	    } else {

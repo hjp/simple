@@ -56,6 +56,7 @@ sub logtime2str {
 }
 
 
+if (@ARGV == 0) { push (@ARGV, "."); }
 find(\&wanted, @ARGV);
 
 print "\n\n";

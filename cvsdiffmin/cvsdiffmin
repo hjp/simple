@@ -1,0 +1,63 @@
+#!/usr/local/bin/perl -w
+#
+# $Id: cvsdiffmin,v 1.1 2000-02-08 16:13:55 hjp Exp $
+#
+# cvsdiffmin - minimize output of cvs diff
+#
+
+use strict;
+
+use File::Slurp;
+
+my $diff = "/usr/local/bin/diff";
+
+my $state = 'EQ';
+my %text = ();
+my %cap = ();
+my $count = 0;
+
+local $| = 1;
+
+while (<>) {
+    print STDERR;
+
+    if ($state eq 'EQ' && /^\<{7} /) {
+	print STDERR "-> V1\n";
+	$state = 'V1';
+	$text{$state} = "";
+	$cap{$state} = $_;
+	next;
+    }
+    if ($state eq 'V1' && /^\={7}$/) {
+	print STDERR "-> V2\n";
+	$state = 'V2';
+	$text{$state} = "";
+	next;
+    }
+    if ($state eq 'V2' && /^\>{7} /) {
+	$cap{$state} = $_;
+	write_file("cvsdiffmin.$$.$count.1", $text{V1});
+	write_file("cvsdiffmin.$$.$count.2", $text{V2});
+	system ($diff,
+	        "--unchanged-group-format=\%=\n", 
+	        "--changed-group-format=${cap{V1}}\n\%<\n=======\n\%>\n${cap{V2}}\n", 
+		"cvsdiffmin.$$.$count.1", 
+		"cvsdiffmin.$$.$count.2");
+
+	
+	print STDERR "-> EQ\n";
+	$state = 'EQ';
+	$count++;
+	next;
+    }
+    if ($state eq 'EQ') {
+	print;
+    } else {
+	$text{$state} .= $_;
+    }
+    
+}
+
+print "$state\n";
+
+# vim:sw=4

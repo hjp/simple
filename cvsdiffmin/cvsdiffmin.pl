@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: cvsdiffmin.pl,v 1.1 2000-02-08 16:58:28 hjp Exp $
+# $Id: cvsdiffmin.pl,v 1.2 2000-02-08 17:18:20 hjp Exp $
 #
 # cvsdiffmin - minimize output of cvs diff
 #
@@ -50,6 +50,8 @@ while (<>) {
 	    print;
 	}
 	close(DIFF);
+	unlink ("cvsdiffmin.$$.$count.1", "cvsdiffmin.$$.$count.2")
+	    or die "cannot unlink temporary files cvsdiffmin.$$.$count.1, cvsdiffmin.$$.$count.2: $!";
 
 	
 	$state = 'EQ';

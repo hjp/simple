@@ -17,6 +17,7 @@ install: \
 	$(BINDIR)/psg \
 	$(BINDIR)/save \
 	$(BINDIR)/savedate \
+	$(BINDIR)/findsock \
 
 fnp: fnp.sh
 fnpa: fnpa.sh

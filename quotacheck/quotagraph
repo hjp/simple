@@ -20,6 +20,12 @@ sub usage {
     exit(1);
 }
 
+my @path = split(/:/, $ENV{PATH});
+unless (grep { $_ eq "/usr/local/bin" } @path) {
+    push @path, "/usr/local/bin";
+}
+$ENV{PATH} = join(":", @path);
+
 while(<>) {
     my ($date, $fs, $user, $bused, $bsoft, $bhard, $iused, $isoft, $ihard) = split(/\t/);
     if (

@@ -117,6 +117,7 @@ for my $ln (@df) {
 	         (\d+)\s+(\d+)\s+(\d+)\s+
 	         (\d+)\s+(\d+)\s+(\d+)
 		 /x) {
+		$user = $1;
 		#print "ok: $1\n";
 	    } elsif  (/(\w+) \s+ \+- \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))\s+
@@ -167,7 +168,6 @@ for my $ln (@df) {
 		}
 	    }
 	    else{
-	    	my $user;
 	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user");
 	    	unlink (@deletemsg);
 	        }

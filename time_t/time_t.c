@@ -1,6 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 char *cmnd;
 
@@ -12,20 +14,35 @@ static void usage(void) {
 
 int main(int argc, char **argv) {
     int i;
+    char *format = "%Y-%m-%d %H:%M:%S %Z";
+    int c;
 
     cmnd = argv[0];
 
-    if (argc <= 1) usage();
+    while ((c = getopt(argc, argv, "f:")) != EOF) {
+	switch(c) {
+	case 'f':
+	    format = optarg;
+	    break;
+	case '?':
+	    usage();
+	default:
+	    assert("this" == "unreachable");
+	}
+    }
 
-    for (i = 1; i < argc; i++) {
+    if (optind >= argc) usage();
+
+    for (i = optind; i < argc; i++) {
 	time_t t = strtoul(argv[i], NULL, 0);
 	struct tm *tmp;
-	char buf[32];
+	char buf[1024];
 
-	printf("%lu\t", t);
 	tmp = localtime(&t);
-	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S %Z", tmp);
+	strftime(buf, sizeof(buf), format, tmp);
 	printf("%s\n", buf);
     }
     return 0;
 }
+/* vim:sw=4
+ */

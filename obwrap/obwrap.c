@@ -7,7 +7,8 @@ char obwrap_c_rcsid[] =
  * from such a script (e.g., oracle) will have open file descriptors
  * on /var/opt/omni, which is a bad thing.
  * This program closes all file descriptors except stdin and stdout,
- * changes uid (if -u is given) and executes the specified program.
+ * changes uid (if -u is given), chdirs to the root directory and
+ * executes the specified program.
  */
 #include <errno.h>
 #include <stdio.h>
@@ -83,6 +84,8 @@ int main(int argc, char **argv) {
     }
 
     dup2(1, 2);
+
+    chdir("/");
 
     execv(argv[optind], argv + optind + 1);
     fprintf(nonstderr, "%s: could not exec %s: %s\n",

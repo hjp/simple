@@ -24,3 +24,7 @@ fi
 echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
 
 
+################################################################
+# finish: 
+#	add a blank line to customize
+echo >> customize

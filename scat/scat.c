@@ -1,7 +1,21 @@
+char scat_c_cvs_version[] = 
+    "$Id: scat.c,v 1.2 1999-08-01 18:09:09 hjp Exp $";
+/* scat - safe cat
+ *
+ * catenate input files and print to standard output.
+ * replace all non-printable characters with C \xXX escapes.
+ *
+ * $Log: scat.c,v $
+ * Revision 1.2  1999-08-01 18:09:09  hjp
+ * First release
+ *
+ */
 #include <ctype.h>
+#include <errno.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <features.h>
 #include <nl_types.h>
@@ -29,10 +43,9 @@ void do_safecat(const char *filename) {
 	fp = stdin;
     } else {
 	if ((fp = fopen(filename, "r")) == NULL) {
-	    fprintf(stderr,
-	            catgets(catalog, MSG_Set, MSG_OPEN, 
+	    fprintf(stderr, catgets(catalog, MSG_Set, MSG_OPEN, 
 	                    "%s: cannot open `%s' for reading: %s\n"),
-		    cmnd, filename);
+	            cmnd, filename, strerror(errno));
 	    exit(1);
 	}
     }
@@ -42,7 +55,7 @@ void do_safecat(const char *filename) {
 		fprintf(stderr,
 			catgets(catalog, MSG_Set, MSG_WRITE, 
 				"%s: cannot write stdout: %s\n"),
-			cmnd, filename);
+			cmnd, strerror(errno));
 		exit(1);
 	    }
 	} else {
@@ -50,7 +63,7 @@ void do_safecat(const char *filename) {
 		fprintf(stderr,
 			catgets(catalog, MSG_Set, MSG_WRITE, 
 				"%s: cannot write stdout: %s\n"),
-			cmnd, filename);
+			cmnd, strerror(errno));
 		exit(1);
 	    }
 	}
@@ -59,7 +72,7 @@ void do_safecat(const char *filename) {
 	fprintf(stderr,
 		catgets(catalog, MSG_Set, MSG_READ, 
 			"%s: cannot read from `%s': %s\n"),
-		cmnd, filename);
+		cmnd, filename, strerror(errno));
 	exit(1);
     }
     if (strcmp(filename, "-") == 0) {
@@ -73,6 +86,7 @@ void do_safecat(const char *filename) {
 int main(int argc, char **argv) {
     setlocale(LC_ALL, "");
 
+    cmnd = argv[0];
     catalog = catopen("scat", 0);
     if (argc == 1) {
 	do_safecat("-");

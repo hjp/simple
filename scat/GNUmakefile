@@ -1,7 +1,7 @@
 include GNUmakevars
 include GNUmakerules
 
-all: scat
+all: scat $(patsubst %.msg, %.cat, $(wildcard *.msg))
 
 scat: scat.o
 scat.o: scat.c scat.h

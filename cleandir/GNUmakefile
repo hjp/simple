@@ -1,7 +1,10 @@
 include GNUmakevars
 
 TARGETS = cleandir
-all: $(TARGETS)
+CONFDIR=../../configure
+CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
+
+all: configure $(TARGETS)
 
 clean:
 	rm -f $(TARGETS) *.bak core foo bar baz *.ps
@@ -24,5 +27,13 @@ customize: configure
 
 $(SBINDIR):
 	mkdir -p $@
+
+ifeq ($(CONFDIR_exists),ok)
+
+configure: $(CONFDIR)/start $(CONFDIR)/perl $(CONFDIR)/finish
+	cat $^ > $@
+
+endif
+
 
 include GNUmakerules

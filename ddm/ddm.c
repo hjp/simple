@@ -1,5 +1,5 @@
 char ddm_c_rcs_id[] =
-    "$Id: ddm.c,v 1.2 2000-06-04 16:11:12 hjp Exp $";
+    "$Id: ddm.c,v 1.3 2000-06-04 16:19:00 hjp Exp $";
 /* 
  * ddm - disk delay monitor
  *
@@ -44,7 +44,7 @@ int main(int argc, char**argv) {
 	/* Get list of directories 
 	 */
 	ts = gettimestamp();
-	fprintf(stderr, "%s: %.6f: open %s\n", argv[0], MNTTAB, ts);
+	fprintf(stderr, "%s: %.6f: open %s\n", argv[0], ts, MNTTAB);
 	if ((mtp = setmntent(MNTTAB, "r")) == NULL) {
 	    fprintf(stderr, "%s: cannot open %s: %s\n",
 		    argv[0], MNTTAB, strerror(errno));
@@ -115,7 +115,10 @@ int main(int argc, char**argv) {
 
 /* 
  * $Log: ddm.c,v $
- * Revision 1.2  2000-06-04 16:11:12  hjp
+ * Revision 1.3  2000-06-04 16:19:00  hjp
+ * Fixed order of args in fprintf (segfault).
+ *
+ * Revision 1.2  2000/06/04 16:11:12  hjp
  * Added autodetection of /etc/m(nt)?tab.
  *
  * Revision 1.1  2000/06/04 15:53:19  hjp

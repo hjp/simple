@@ -1,15 +1,61 @@
 #!@@@perl@@@ -w
+
+=head1 NAME
+
+cleandir - remove unused files from directory
+
+=head1 SYNOPSIS
+
+cleandir [-d days] [-n] [-v] [-s] directory...
+
+=head1 DESCRIPTION
+
+cleandir recursively searches each directory given on the commandline
+for files and subdirectories which have not been accessed for n days and
+deletes them.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d days>
+
+Delete files which have not been accessed for the given number of days.
+The default is 14.
+
+=item B<-n>
+
+No-op. Don't delete any files.
+
+=item B<-v>
+
+Verbose. Can be repeated to increase verbosity.
+
+=item B<-s>
+
+Skip sockets and named pipes. Some programs (notably X11 and some
+databases) create sockets and named pipes in /tmp and foolishly expect 
+them to survive. This option exists to humour them.
+
+=back
+
+=head1 AUTHOR
+
+Peter J. Holzer <hjp@hjp.at>. Thanks to Chris Mason for some
+enhancements.
+
+=cut
+
 use strict;
 use File::stat;
 use POSIX;
+use Getopt::Long;
+use Pod::Usage;
 
 my $verbose = 0;
 my $nop = 0;
+my $skip_fifos = 0;
 
-sub usage {
-    print STDERR "Usage: $0 [-d days] dir ...\n";
-    exit(1);
-}
 
 sub cleandir {
     my ($dir, $since, $level) = (@_);
@@ -33,7 +79,16 @@ sub cleandir {
 	my $st = lstat("$i");
 
 	# Skip anything on a different filesystem
-	next if ($st->dev != $fs);
+	if ($st->dev != $fs) {
+		$notremoved++;
+		next;
+	}
+
+	# Skip sockets and pipes
+	if ($skip_fifos && (-p $i || -S $i)) {
+		$notremoved++;
+		next;
+	}
 
 	if ($verbose > 3) {
 	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, "\n";
@@ -98,20 +153,23 @@ sub cleandir {
 sub main {
     my $since = time() - 14 * 86400;;
     my $i;
+    my $help;
+
+    GetOptions('help|?' => \$help,
+               'days|d=f' => sub { $since = time() - $_[1] * 86400; },
+               'verbose|v' => sub { $verbose++ },
+	       'nop|n' => \$nop,
+	       'skip-fifos|s' => \$skip_fifos,
+	      ) or pod2usage(2);
+    pod2usage(1) if $help;
+    pod2usage(2) unless (@ARGV);
+    
+
     while ($i = shift(@ARGV)) {
-	if ($i eq "-d") {
-	    my $days = shift(@ARGV);
-	    $since = time() - $days * 86400;
-	} elsif ($i eq "-v") {
-	    $verbose++;
-	} elsif ($i eq "-n") {
-	    $nop++;
-	} else {
-	    my $cwd = getcwd();
-	    if (chdir($i)) {
-		cleandir($i, $since, 0);
-		chdir($cwd);
-	    }
+	my $cwd = getcwd();
+	if (chdir($i)) {
+	    cleandir($i, $since, 0);
+	    chdir($cwd);
 	}
     }
     exit(0);
@@ -120,7 +178,14 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.2  2002-02-25 23:33:29  hjp
+# Revision 1.3  2003-05-14 11:49:56  hjp
+# Added yet another patch by Chris Mason.
+#
+# Added POD.
+#
+# Changed option processing to use Getopt::Long and Pod::Usage.
+#
+# Revision 1.2  2002/02/25 23:33:29  hjp
 # Applied patch from "Chris L. Mason" <cmason@somanetworks.com> to prevent
 # filesystem traversal.
 #

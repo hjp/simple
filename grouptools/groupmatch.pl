@@ -36,6 +36,12 @@ specified list. Users which are already in the group are marked (*).
 
 Prints some debug output to stderr.
 
+=item --miss value
+
+Penalty for missing users in a group. Default is 1, i.e., a user missing
+is just as bad as a superfluous user. Larger values bias towards groups
+with too many users, smaller values bias towards groups with too few users.
+
 =back
 
 =head1 AUTHOR
@@ -62,11 +68,12 @@ sub diffsym {
 my $cut = undef;
 my $debug = 0;
 my $allmembers = 0;
+my $miss = 1;
 GetOptions("cut=i" => \$cut,
            "debug" => \$debug,
-           "allmembers" => \$allmembers);
-           
-
+           "allmembers" => \$allmembers,
+	   "miss=f" => \$miss,
+          );
 my $gr = {};
 
 my @gr;
@@ -87,7 +94,7 @@ while (@pw = getpwent()) {
 }
 for my $g (keys %$gr) {
     for my $u (@ARGV) {
-	$gr->{$g}->{Members}->{$u}--;
+	$gr->{$g}->{Members}->{$u} = (($gr->{$g}->{Members}->{$u} || 0) - 1) * $miss;
     }
     my $score = 0;
     for my $u (keys(%{$gr->{$g}->{Members}})) {

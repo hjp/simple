@@ -18,7 +18,7 @@ do
 done
 if [ -z "$perl" ]
 then
-    could not find a working perl command, sorry.
+    echo could not find a working perl command, sorry.
     exit 1
 fi
 echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize.$$

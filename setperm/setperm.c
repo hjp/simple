@@ -8,7 +8,7 @@
 
 char *cmnd;
 
-void usage(void) {
+static void usage(void) {
 	fprintf(stderr, "Usage: %s -F protofile file ...\n", cmnd);
 	exit(1);
 }
@@ -19,7 +19,7 @@ typedef struct {
 	mode_t mode;
 } perm_t;
 
-int getperm(const char *filename, perm_t *permp) {
+static int getperm(const char *filename, perm_t *permp) {
 	struct stat sb;
 
 	if (stat(filename, &sb) == -1) return -1;
@@ -29,7 +29,7 @@ int getperm(const char *filename, perm_t *permp) {
 	return 0;
 }
 
-int setperm(const char *filename, perm_t perm) {
+static int setperm(const char *filename, perm_t perm) {
 	int rc = 0;
 	
 	if (chown(filename, perm.user, perm.group) == -1) {

@@ -128,11 +128,11 @@ sub cleandir {
 		}
 		if ($remaining == 0 && $st->mtime < $since) {
 		    if ($verbose > 0) {
-			print STDERR "$0:", " " x $level, "rmdir $i\n";
+			print STDERR "$0:", " " x $level, "rmdir $dir/$i\n";
 		    }
 		    unless ($nop) {
 			if (rmdir("$i")) {next}
-			print STDERR "$0:", " " x $level, "rmdir $i failed: $!\n";
+			print STDERR "$0:", " " x $level, "rmdir $dir/$i failed: $!\n";
 		    }
 		} 
 	    } else {
@@ -185,7 +185,10 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.7  2004-11-02 09:01:12  hjp
+# Revision 1.8  2005-04-04 16:05:40  hjp
+# Print whole directory at rmdir with verbose output.
+#
+# Revision 1.7  2004/11/02 09:01:12  hjp
 # Critical bug fix: Empty directories were removed even with -n.
 # Minor cleanup: Message "removing ..." is now the same with and without -n.
 #

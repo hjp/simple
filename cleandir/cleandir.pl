@@ -130,24 +130,23 @@ sub cleandir {
 		    if ($verbose > 0) {
 			print STDERR "$0:", " " x $level, "rmdir $i\n";
 		    }
-		    if (rmdir("$i")) {next}
-		    print STDERR "$0:", " " x $level, "rmdir $i failed: $!\n";
+		    unless ($nop) {
+			if (rmdir("$i")) {next}
+			print STDERR "$0:", " " x $level, "rmdir $i failed: $!\n";
+		    }
 		} 
 	    } else {
 		print STDERR "$0:", " " x $level, " chdir $dir/$i failed: $!\n";
 	    }
 	    
 	} elsif ($st->mtime < $since && ($st->atime < $since || $mtime_only)) {
-	    if ($nop) {
-		print "would remove $dir/$i\n";
-	    } else {
-		if ($verbose > 0) {
-		    print STDERR "$0:", " " x $level, " removing $dir/$i\n";
-		}
+	    if ($verbose > 0) {
+		print STDERR "$0:", " " x $level, " removing $dir/$i\n";
+	    }
+	    unless ($nop) {
 		if (unlink("$i")) {next}
 		print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!\n";
 	    }
-	    
 	} 
 	$notremoved++;
     }
@@ -186,7 +185,11 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.6  2003-05-16 14:44:58  hjp
+# Revision 1.7  2004-11-02 09:01:12  hjp
+# Critical bug fix: Empty directories were removed even with -n.
+# Minor cleanup: Message "removing ..." is now the same with and without -n.
+#
+# Revision 1.6  2003/05/16 14:44:58  hjp
 # Added -m option to synopsis.
 #
 # Revision 1.5  2003/05/16 13:38:25  hjp

@@ -1,4 +1,7 @@
 #!@@@perl@@@ -w
+#
+# $Id: agestat.pl,v 1.4 2001-01-19 19:06:01 hjp Exp $
+#
 
 use strict;
 use File::stat;
@@ -18,7 +21,7 @@ if (!defined($opts{scale})) {
 } elsif ($opts{scale} eq 'M') {
     $scale = 1024*1024;
 } else {
-    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|m)]\n";
+    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|M)]\n";
     exit 1;
 }
 
@@ -75,5 +78,9 @@ for (my $i = 0; $i <= $#hist; $i++) {
     printf("%2d\t%s\t%12.0f\t%5.1f\t%12.0f\t%5.1f\n", $i,
 	   logtime2str($i), $h/$scale, $h * 100 / $sum, $c/$scale, $c * 100 / $sum);
 }
-print("#-------------------------------------------\n");
-printf("total\t\t%12.0f\t%5.1f\n",  $sum/$scale, $sum * 100 / $sum);
+
+# $Log: agestat.pl,v $
+# Revision 1.4  2001-01-19 19:06:01  hjp
+# Removed superfluous "total" line.
+# Fixed usage message.
+#

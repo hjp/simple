@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: cvsdiffmin.pl,v 1.2 2000-02-08 17:18:20 hjp Exp $
+# $Id: cvsdiffmin.pl,v 1.3 2000-02-08 17:21:38 hjp Exp $
 #
 # cvsdiffmin - minimize output of cvs diff
 #
@@ -65,7 +65,5 @@ while (<>) {
     }
     
 }
-
-print "$state\n";
 
 # vim:sw=4

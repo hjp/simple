@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+echo "#!/bin/sh" > customize.$$
+echo "sed \\" > customize.$$
+chmod +x customize.$$
+
+################################################################
+# find a working perl:
+#
+for i in /usr/bin/perl /usr/local/bin/perl /usr/bin/perl5 /usr/local/bin/perl5
+do
+    if $i -e 'exit ($] < 5.000)'
+    then
+	echo $i works
+	perl="$i"
+	break
+    fi
+done
+if [ -z "$perl" ]
+then
+    could not find a working perl command, sorry.
+    exit 1
+fi
+echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize.$$
+
+
+################################################################
+# finish
+#	Add trailing newline and rename temp file to final name
+#
+echo  >> customize.$$
+
+mv customize.$$ customize
+

@@ -3,7 +3,7 @@ include GNUmakevars
 CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
-all: configure dus fnp fnpa fnpc fqdn isodate psg save
+all: configure dus fnp fnpa fnpc isodate psg save
 
 clean:
 	rm fnp fnpa fnpc customize
@@ -13,7 +13,6 @@ install: \
 	$(BINDIR)/fnp \
 	$(BINDIR)/fnpa \
 	$(BINDIR)/fnpc \
-	$(BINDIR)/fqdn \
 	$(BINDIR)/isodate \
 	$(BINDIR)/psg \
 	$(BINDIR)/save \

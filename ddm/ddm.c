@@ -1,5 +1,5 @@
 char ddm_c_rcs_id[] =
-    "$Id: ddm.c,v 1.5 2000-09-07 10:12:35 hjp Exp $";
+    "$Id: ddm.c,v 1.6 2001-02-21 16:02:46 hjp Exp $";
 /* 
  * ddm - disk delay monitor
  *
@@ -24,7 +24,11 @@ char ddm_c_rcs_id[] =
 #include <ant/io.h>
 #include <ant/globals.h>
 
+#include "cfg/mnttab.h"
+
+
 typedef enum { MODE_NONE, MODE_ARGS, MODE_MNTTAB, MODE_DIRFILE } modeT;
+
 
 static double gettimestamp(void) {
     struct timeval tm;
@@ -34,7 +38,7 @@ static double gettimestamp(void) {
 }
 
 static void usage(void) {
-    fprintf(stderr, "Usage: %s [-d dirfile | -m mnttab | directory ...  ]\n",
+    fprintf(stderr, "Usage: %s [-d dirfile | -m mnttab | directory ...  ] [-s max_sleep_time]\n",
 	    cmnd);
     exit(1);
 }
@@ -57,11 +61,14 @@ int main(int argc, char**argv) {
     int nr_dirs;
     int c;
     char *filename = NULL;
+    double maxsleeptime = 3600;
 
     cmnd = argv[0];
 
-    while ((c = getopt(argc, argv, "d:m:")) != EOF) {
+    while ((c = getopt(argc, argv, "d:m:s:")) != EOF) {
 	switch (c) {
+	    char *p;
+
 	    case 'd':
 		mode = MODE_DIRFILE;
 		filename = optarg;
@@ -69,6 +76,10 @@ int main(int argc, char**argv) {
 	    case 'm':
 		mode = MODE_MNTTAB;
 		filename = optarg;
+		break;
+	    case 's':
+		maxsleeptime = strtod(optarg, &p);
+		if (p == optarg || *p) usage();
 		break;
 	    case '?':
 		usage();
@@ -80,7 +91,7 @@ int main(int argc, char**argv) {
     if (mode == MODE_NONE) {
 	if (optind == argc) {
 	    mode = MODE_MNTTAB;
-	    filename = MNTTAB;
+	    filename = PATH_MNTTAB;
 	} else {
 	    mode = MODE_ARGS;
 	    dirs = argv + optind;
@@ -90,6 +101,8 @@ int main(int argc, char**argv) {
 	if (optind != argc) usage();
     }
 
+
+    srand(time(NULL));
 
     for (;;) {
 	int i;
@@ -181,7 +194,7 @@ int main(int argc, char**argv) {
 
 	chdir("/");
 
-	sleeptime = rand() * 3600.0 / RAND_MAX;
+	sleeptime = rand() * maxsleeptime / RAND_MAX;
 	printtimestamp("sleeping %d seconds\n", sleeptime);
 	sleep(sleeptime);
     }
@@ -192,7 +205,12 @@ int main(int argc, char**argv) {
 
 /* 
  * $Log: ddm.c,v $
- * Revision 1.5  2000-09-07 10:12:35  hjp
+ * Revision 1.6  2001-02-21 16:02:46  hjp
+ * Added config test for mnttab again.
+ * Added option -s (max sleep time)
+ * Added script stats.sh to generate stats.
+ *
+ * Revision 1.5  2000/09/07 10:12:35  hjp
  * Added alternate ways to specify directories to be monitored.
  *
  * Revision 1.4  2000/06/04 16:33:21  hjp

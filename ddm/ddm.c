@@ -1,5 +1,5 @@
 char ddm_c_rcs_id[] =
-    "$Id: ddm.c,v 1.1 2000-06-04 15:53:19 hjp Exp $";
+    "$Id: ddm.c,v 1.2 2000-06-04 16:11:12 hjp Exp $";
 /* 
  * ddm - disk delay monitor
  *
@@ -19,6 +19,8 @@ char ddm_c_rcs_id[] =
 #include <unistd.h>
 
 #include <ant/da.h>
+
+#include "cfg/mnttab.h"
 
 static double gettimestamp(void) {
     struct timeval tm;
@@ -42,10 +44,10 @@ int main(int argc, char**argv) {
 	/* Get list of directories 
 	 */
 	ts = gettimestamp();
-	fprintf(stderr, "%s: %.6f: open /etc/mtab\n", argv[0], ts);
-	if ((mtp = setmntent("/etc/mtab", "r")) == NULL) {
-	    fprintf(stderr, "%s: cannot open /etc/mtab: %s\n",
-		    argv[0], strerror(errno));
+	fprintf(stderr, "%s: %.6f: open %s\n", argv[0], MNTTAB, ts);
+	if ((mtp = setmntent(MNTTAB, "r")) == NULL) {
+	    fprintf(stderr, "%s: cannot open %s: %s\n",
+		    argv[0], MNTTAB, strerror(errno));
 	    exit(1);
 	}
 	for (i = 0;(me = getmntent(mtp)); i++) {
@@ -113,7 +115,10 @@ int main(int argc, char**argv) {
 
 /* 
  * $Log: ddm.c,v $
- * Revision 1.1  2000-06-04 15:53:19  hjp
+ * Revision 1.2  2000-06-04 16:11:12  hjp
+ * Added autodetection of /etc/m(nt)?tab.
+ *
+ * Revision 1.1  2000/06/04 15:53:19  hjp
  * Pre-Version. Options are still missing.
  *
  */

@@ -1,9 +1,9 @@
 include GNUmakerules
 include GNUmakevars
 
-acctfix:
+count:
 
-install: $(ROOT)/usr/local/bin/count $(ROOT)/usr/local/man/man8/count.8
+install: $(ROOT)/usr/local/bin/count 
 
 install_all:
 	$(MAKE) install ROOT=/nfs/wsrdb

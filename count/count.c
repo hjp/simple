@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     }
 
     for (i = start; i < stop; i++) {
-	printf("%d\n", i);
+	printf("%ld\n", i);
     }
     return 0;
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use File::stat;
+use POSIX;
 
 my $verbose = 0;
 my $nop = 0;
@@ -17,10 +18,11 @@ sub cleandir {
     if ($verbose > 1) {
 	print STDERR "$0:", " " x $level, " cleandir $dir $since {\n";
     }
-    if (!opendir(DIR, $dir)) {
+    if (!opendir(DIR, ".")) {
 	printf STDERR "$0:", " " x $level, " cannot opendir $dir: $!";
 	return;
     }
+    my $std = lstat(".");
     for my $i (readdir(DIR)) {
 	if ($i eq "." || $i eq "..") {next}
 	if ($verbose > 2) {
@@ -31,10 +33,35 @@ sub cleandir {
 	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, "\n";
 	}
 	if (-d _) {
+	    my $cwd = getcwd();
+	    if (!chdir($i)) {
+		my $st1 = lstat(".");
+		if ($st->dev == $st1->dev && $st->ino == $st1->ino) {
+		    if (cleandir("$dir/$i", $since, $level+1) == 0 && $st->mtime < $since) {
+			if (rmdir("$dir/$i")) {next}
+		    } 
+		} else {
+		    print STDERR "$0:", " " x $level,
+		    		 " $dir/$i changed dev/inode from ",
+				 $st->dev, "/", $st->ino,
+				 " to ",
+				 $st1->dev, "/", $st1->ino,
+				 "\n";
+		}
+		chdir($cwd);
+		my $std1 = lstat(".");
+		if (!($std->dev == $std1->dev && $std->ino == $std1->ino)) {
+		    print STDERR "$0:", " " x $level,
+		    		 " $cwd changed dev/inode from ",
+				 $std->dev, "/", $std->ino,
+				 " to ",
+				 $std1->dev, "/", $std1->ino,
+				 "\n";
+		}
+	    } else {
+		print STDERR "$0:", " " x $level, " chdir $dir/$i failed: $!\n";
+	    }
 	    
-	    if (cleandir("$dir/$i", $since, $level+1) == 0 && $st->mtime < $since) {
-		if (rmdir("$dir/$i")) {next}
-	    } 
 	} elsif ($st->mtime < $since && $st->atime < $since) {
 	    if ($nop) {
 		print "would remove $dir/$i\n";
@@ -43,7 +70,7 @@ sub cleandir {
 		    print STDERR "$0:", " " x $level, " removing $dir/$i\n";
 		}
 		if (unlink("$dir/$i")) {next}
-		print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!/$i\n";
+		print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!\n";
 	    }
 	    
 	} 
@@ -67,7 +94,11 @@ sub main {
 	} elsif ($i eq "-n") {
 	    $nop++;
 	} else {
-	    cleandir($i, $since, 0);
+	    my $cwd = getcwd();
+	    if (chdir($i)) {
+		cleandir($i, $since, 0);
+		chdir($cwd);
+	    }
 	}
     }
     exit(0);

@@ -47,6 +47,7 @@ $pnmfile = "/usr/local/bin/pnmfile";
 $pnmscale = "/usr/local/bin/pnmscale";
 $ppmquant = "/usr/local/bin/ppmquant";
 $ppmtogif = "/usr/local/bin/ppmtogif";
+$cjpeg = "/usr/local/bin/cjpeg";
 
 chdir($fotodir) or die "cannot cd to $fotodir: $!";
 
@@ -104,7 +105,7 @@ open(HTML, ">map.html") or die "cannot open map.html for writing: $!";
 
 print HTML "<html><head><title>Wifo: Photo Gallery</title></head>\n";
 print HTML "<body>\n";
-print HTML qq|  <img src="map.gif" usemap="#map" width=|,
+print HTML qq|  <img src="map.jpg" usemap="#map" width=|,
 	   $fw * $gifw, qq| height=|, $fh * $gifh, qq| border=0>\n|;
 print HTML qq|<map name="map">\n|;
 
@@ -136,4 +137,4 @@ print HTML "</html>\n";
 if (!close (HTML)) {
     print "$0: error closing map.html: $!\n";
 }
-system("$pnmcat -topbottom -jleft -white " . join(" ", @col) . "| $ppmquant 256 | $ppmtogif > map.gif");
+system("$pnmcat -topbottom -jleft -white " . join(" ", @col) . "| $cjpeg -progressive > map.jpg");

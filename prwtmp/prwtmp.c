@@ -1,10 +1,15 @@
 char prwtmp_c_rcs_id[] = 
-	"$Id: prwtmp.c,v 1.1 1997-01-13 14:59:40 hjp Exp $";
+	"$Id: prwtmp.c,v 1.2 1998-05-28 16:18:21 hjp Exp $";
 /*
  * prwtmp - print wtmp to stdout
  *
  * $Log: prwtmp.c,v $
- * Revision 1.1  1997-01-13 14:59:40  hjp
+ * Revision 1.2  1998-05-28 16:18:21  hjp
+ * use GNUmakerules/GNUmakevars for CC and INSTALL.
+ * Bug fix: initial offset wasn't initialized
+ * Bug fix: #include <unistd.h> and a cast (both needed for glibc2)
+ *
+ * Revision 1.1  1997/01/13 14:59:40  hjp
  * Checked into CVS.
  * Added -o and -s options.
  *
@@ -17,6 +22,7 @@ char prwtmp_c_rcs_id[] =
 #include <time.h>
 
 #include <sys/types.h>
+#include <unistd.h>
 #include <utmp.h>
 
 char *cmnd;
@@ -31,7 +37,7 @@ int main (int argc, char **argv) {
 	FILE *fp;
 	struct utmp u;
 	char *filename = WTMP_FILE;
-	long off;
+	long off = 0;
 	int print_offset = 0;
 	int c;
 	char *p;
@@ -96,7 +102,7 @@ int main (int argc, char **argv) {
 		       (int)sizeof(u.ut_host),
 		       (int)sizeof(u.ut_host),
 		       u.ut_host);
-		printf("%08lx", u.ut_addr);
+		printf("%08lx", (unsigned long)u.ut_addr);
 		printf("\n");
 		
 	}

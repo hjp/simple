@@ -1,5 +1,5 @@
-CC = gcc -Wall
-INSTALL = /usr/local/bin/install
+include GNUmakevars
+include GNUmakerules
 
 prwtmp:
 

@@ -1,12 +1,15 @@
 char scat_c_cvs_version[] = 
-    "$Id: scat.c,v 1.2 1999-08-01 18:09:09 hjp Exp $";
+    "$Id: scat.c,v 1.3 2000-02-10 00:17:35 hjp Exp $";
 /* scat - safe cat
  *
  * catenate input files and print to standard output.
  * replace all non-printable characters with C \xXX escapes.
  *
  * $Log: scat.c,v $
- * Revision 1.2  1999-08-01 18:09:09  hjp
+ * Revision 1.3  2000-02-10 00:17:35  hjp
+ * Shut up gcc
+ *
+ * Revision 1.2  1999/08/01 18:09:09  hjp
  * First release
  *
  */
@@ -25,7 +28,7 @@ char scat_c_cvs_version[] =
 char *cmnd;
 nl_catd catalog;
 
-void usage(void) {
+static void usage(void) {
     fprintf(stderr,
 	    catgets(catalog, MSG_Set, MSG_USAGE, 
 		    "Usage: %s [file ...]\n"),
@@ -34,7 +37,7 @@ void usage(void) {
 }
 
 
-void do_safecat(const char *filename) {
+static void do_safecat(const char *filename) {
     FILE *fp;
     int c;
 

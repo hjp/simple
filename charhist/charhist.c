@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <locale.h>
 #include <stdio.h>
 #include <limits.h>
 
@@ -7,6 +8,7 @@ long hist[UCHAR_MAX+1];
 int main (int argc, char **argv) {
     int c;
 
+    setlocale(LC_ALL, "");
     while ((c = getchar()) != EOF) {
 	hist[c]++;
     }

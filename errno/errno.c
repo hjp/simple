@@ -6,12 +6,6 @@
 
 char *cmnd;
 
-static void usage(void) {
-    fprintf(stderr, "Usage: %s errno ...\n", cmnd);
-    exit(1);
-}
-
-
 int main(int argc, char **argv) {
     int i;
 
@@ -26,18 +20,37 @@ int main(int argc, char **argv) {
 	}
     } else {
 	for (i = 1; i < argc; i++) {
-	    int e = strtoul(argv[i], NULL, 0);
-	    char *d = "(unknown)";
-	    int j;
+	    char *p;
+	    int e = strtoul(argv[i], &p, 0);
 
-	    for (j = 0; j < wke_nr; j++) {
-		if (wke[j].number == e) {
-		    d = wke[j].define;
-		    break;
+	    if (*p) {
+		/* This is not a number, so we assume it is a define */
+		char *d = argv[i];
+		int j;
+
+		for (j = 0; j < wke_nr; j++) {
+		    if (strcmp(wke[j].define, d) == 0) {
+			e = wke[j].number;
+			printf("%d\t%s\t%s\n", e, d, strerror(e));
+			break;
+		    }
 		}
+
+	    } else {
+		/* it is a number */
+		char *d = "(unknown)";
+		int j;
+
+		for (j = 0; j < wke_nr; j++) {
+		    if (wke[j].number == e) {
+			d = wke[j].define;
+			break;
+		    }
+		}
+
+		printf("%d\t%s\t%s\n", e, d, strerror(e));
 	    }
 
-	    printf("%d\t%s\t%s\n", e, d, strerror(e));
 	}
     }
     return 0;

@@ -6,7 +6,7 @@ cleandir - remove unused files from directory
 
 =head1 SYNOPSIS
 
-cleandir [-d days] [-n] [-v] [-s] directory...
+cleandir [-d days] [-n] [-m] [-v] [-s] directory...
 
 =head1 DESCRIPTION
 
@@ -186,7 +186,10 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.5  2003-05-16 13:38:25  hjp
+# Revision 1.6  2003-05-16 14:44:58  hjp
+# Added -m option to synopsis.
+#
+# Revision 1.5  2003/05/16 13:38:25  hjp
 # Included -m (mtime-only) option (CVS is nice, but only if it used).
 # Improved pod a bit.
 #

@@ -110,6 +110,7 @@ for my $ln (@df) {
     if ($fs =~ m|^/dev/|) {
 	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
 	while (<REPQUOTA>) {
+	    next if ($. <= 2);	# ignore header lines
 	    my $msg = "";
 	    my $user;
 	    if (/(\w+) \s+ -- \s*
@@ -142,9 +143,8 @@ for my $ln (@df) {
 		print "file limit: $1: $6 > ($7 $8) $9\n";
 		$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files", $user);
 	    } else {
-		if ($. > 2) {	# ignore header lines
-		    print "$mount: $.: unparseable: $_";
-		}
+		print "$mount: $.: unparseable: $_";
+		next;
 	    }
 	    if ($msg) {
 		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user";

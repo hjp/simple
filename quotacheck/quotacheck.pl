@@ -88,7 +88,56 @@ sub sendmail
     print SENDMAIL "$msg\r\n";
 }
 
-getopts('ad', \%opts);
+sub parseline($$) {
+    my ($mount, $line) = @_;
+    local $_ = $line;
+    my $hpuxtime = '(?:NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))';
+    my $linuxtime = '(?:none|\d+\:\d+|\d+days)';
+    return undef unless (/\b\d+\b/);	# ignore header lines
+    my $msg = "";
+    my $user;
+    if (/(\w+) \s+ -- \s*
+	 (\d+)\s+(\d+)\s+(\d+)\s+
+	 (\d+)\s+(\d+)\s+(\d+)
+	 /x) {
+	$user = $1;
+	#print "ok: $1\n";
+    } elsif  (/(\w+) \s+ \+- \s*
+	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
+	 (\d+)\s+(\d+)\s+(\d+)
+	 /x) {
+	print "block limit: $1: $2 > ($3 $4) $5\n";
+	$user = $1;
+	$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
+
+    } elsif  (/(\w+) \s+ -\+ \s*
+	 (\d+)\s+(\d+)\s+(\d+)\s+
+	 (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ ?(?:days|hours))
+	 /x) {
+	print "file limit: $1: $5 > ($6 $7) $8\n";
+	$user = $1;
+	$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
+    } elsif  (/(\w+) \s+ \+\+ \s*
+	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
+	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
+	 /x) {
+	print "block limit: $1: $2 > ($3 $4) $5\n";
+	$user = $1;
+	$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
+	print "file limit: $1: $6 > ($7 $8) $9\n";
+	$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files", $user);
+    } else {
+	print "$mount: $.: unparseable: $_";
+	next;
+    }
+    return ($user, $msg);
+}
+
+getopts('adt', \%opts);
+
+if ($opts{t}) {
+    selftest();
+}
 
 $hostname=`hostname`;
 chomp($hostname);
@@ -112,42 +161,7 @@ for my $ln (@df) {
 	my $linuxtime = '(?:none|\d+\:\d+|\d+days)';
 	while (<REPQUOTA>) {
 	    next unless (/\b\d+\b/);	# ignore header lines
-	    my $msg = "";
-	    my $user;
-	    if (/(\w+) \s+ -- \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+
-	         (\d+)\s+(\d+)\s+(\d+)
-		 /x) {
-		$user = $1;
-		#print "ok: $1\n";
-	    } elsif  (/(\w+) \s+ \+- \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
-	         (\d+)\s+(\d+)\s+(\d+)
-		 /x) {
-		print "block limit: $1: $2 > ($3 $4) $5\n";
-		$user = $1;
-		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
-
-	    } elsif  (/(\w+) \s+ -\+ \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+
-	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ ?(?:days|hours))
-		 /x) {
-		print "file limit: $1: $5 > ($6 $7) $8\n";
-		$user = $1;
-		$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
-	    } elsif  (/(\w+) \s+ \+\+ \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
-	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
-		 /x) {
-		print "block limit: $1: $2 > ($3 $4) $5\n";
-		$user = $1;
-		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
-		print "file limit: $1: $6 > ($7 $8) $9\n";
-		$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files", $user);
-	    } else {
-		print "$mount: $.: unparseable: $_";
-		next;
-	    }
+	    my ($user, $msg) = parseline($mount, $_);
 	    if ($msg) {
 		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user$mount_t";
 
@@ -170,21 +184,29 @@ for my $ln (@df) {
 		    print PMSG (@time);
 		    close (PMSG);
 		    
-		    }
-		else{
+		} else {
 		    my $comp = -A $timestamp;
 		    print STDERR "comp = $comp\n";
-		    if ($comp > 5)
-		    {
+		    if ($comp > 5) {
 			sendmail($user, $msg, $mount);
 		    }
 		}
-	    }
-	    else{
+	    } else{
 	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user$mount_t");
 	    	unlink (@deletemsg);
-	        }
+	    }
 	}
 	close (REPQUOTA);
     }
+}
+
+
+sub selftest {
+    my $rc = 0;
+    my ($user, $msg);
+
+    ($user, $msg) = parseline("test", "haas      +- 1348620 1048576 2097152  41:48     296  3000  6000\n");
+    unless ($user eq "haas" && $msg) {$rc = 1};
+
+    exit($rc);
 }

@@ -10,8 +10,10 @@ my $hostname;
 sub warnmsg {
     my ($mount, $usage, $soft, $hard, $grace, $unit, $user) = @_;
     my %dosdrv = (
-	'/wsrdb/users'     => 'J:',
-	'/usr/local/www'   => 'W:',
+	'/common'	 => 'H:',
+	'/wsrdb/users'	 => 'J:',
+	'/fc4700'    	 => 'K:',
+	'/usr/local/www' => 'W:',
     );
 
     my $wo;
@@ -25,10 +27,10 @@ sub warnmsg {
     my $msg = "Sie haben auf $wo Ihr in Disk Quotas gesetztes Limit\n" .
 	    "überschritten. \n";
 	    
-    if ($grace eq "EXPIRED" or $usage >= $hard-2) {
+    if ($grace eq "EXPIRED" or $grace eq "none" or $usage >= $hard-2) {
 	$msg .= "Sie können dort KEINE Files mehr anlegen.\n" ;
     } else {
-	$grace =~ s/days/Tage/g;
+	$grace =~ s/ *days/ Tage/g;
 	$grace =~ s/hours/Stunden/g;
 	$msg .= "Sie können noch " .
 		(int (($hard - $usage) * 10 + 0.5) / 10) . " $unit anlegen.\n" ;
@@ -42,9 +44,9 @@ sub warnmsg {
 	    "\n" .
 	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
 	    "http://sww.wsr.ac.at/intranet/quotas/$user$mount_t.gif ansehen. \n" .
-	    "Der Graph zeigten den verbrauchten Platz ("used") sowie die beiden\n" .
-	    "Quotas ("soft" und "hard")\n" .
-	    "Die Softquota können Sie kurzfristig (bis zu einer Woche) überschreiten\n" .
+	    "Der Graph zeigten den verbrauchten Platz ('used') sowie die beiden\n" .
+	    "Quotas ('soft' und 'hard')\n" .
+	    "Die Softquota können Sie kurzfristig (bis zu einer Woche) überschreiten,\n" .
 	    "die Hardquota nicht.\n" .
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
@@ -60,17 +62,6 @@ my %opts;
 sub sendmail
 {
     my ($user, $msg, $mount) = @_;
-
-    my @startgraph= 
-	("/usr/local/dfstat/quotagraph",
-	    "--fs=$mount",
-	    "--user=$user",
-	    "--data=b",
-	    glob("/usr/local/dfstat/quota.stat.????-??")
-	);
-    if (system (@startgraph) != 0) {
-	die "cannot execute @startgraph";
-    }
 
     if ($opts{'d'}) {
 	open (SENDMAIL, ">&1");
@@ -90,6 +81,9 @@ sub sendmail
     print SENDMAIL "Content-Type: text/plain; charset=iso-8859-1\r\n";
     print SENDMAIL "Content-Encoding: 8bit\r\n";
     print SENDMAIL "Reply-To: <system\@wsr.ac.at>\r\n";
+    print SENDMAIL "MIME-Version: 1.0\r\n";
+    print SENDMAIL "Content-Type: text/plain; charset=iso-8859-1\r\n";
+    print SENDMAIL "Content-Transfer-Encoding: 8bit\r\n";
     print SENDMAIL "\r\n";
     print SENDMAIL "$msg\r\n";
 }
@@ -111,9 +105,13 @@ my @df = split(/\n/, $df);
 for my $ln (@df) {
     my ($fs, $total, $used, $free, $pct, $mount) = split(/\s+/, $ln);
     if ($fs =~ m|^/dev/|) {
+	my $mount_t = $mount;
+	$mount_t =~ s|/|_|g;
 	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
+	my $hpuxtime = '(?:NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))';
+	my $linuxtime = '(?:none|\d+\:\d+|\d+days)';
 	while (<REPQUOTA>) {
-	    next if ($. <= 2);	# ignore header lines
+	    next unless (/\b\d+\b/);	# ignore header lines
 	    my $msg = "";
 	    my $user;
 	    if (/(\w+) \s+ -- \s*
@@ -123,7 +121,7 @@ for my $ln (@df) {
 		$user = $1;
 		#print "ok: $1\n";
 	    } elsif  (/(\w+) \s+ \+- \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))\s+
+	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
 	         (\d+)\s+(\d+)\s+(\d+)
 		 /x) {
 		print "block limit: $1: $2 > ($3 $4) $5\n";
@@ -132,14 +130,14 @@ for my $ln (@df) {
 
 	    } elsif  (/(\w+) \s+ -\+ \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+
-	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))
+	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ ?(?:days|hours))
 		 /x) {
 		print "file limit: $1: $5 > ($6 $7) $8\n";
 		$user = $1;
 		$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
 	    } elsif  (/(\w+) \s+ \+\+ \s*
-	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))\s+
-	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))
+	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
+	         (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 		 /x) {
 		print "block limit: $1: $2 > ($3 $4) $5\n";
 		$user = $1;
@@ -151,7 +149,19 @@ for my $ln (@df) {
 		next;
 	    }
 	    if ($msg) {
-		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user";
+		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user$mount_t";
+
+		my @startgraph= 
+		    ("/usr/local/dfstat/quotagraph",
+			"--fs=$mount",
+			"--user=$user",
+			"--data=b",
+			glob("/usr/local/dfstat/quota.stat.????-??")
+		    );
+		if (system (@startgraph) != 0) {
+		    die "cannot execute @startgraph";
+		}
+		system("scp", "/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif", "sww.wsr.ac.at:/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif");
 
 		if (!-e $timestamp) {
 		    sendmail($user, $msg, $mount);	
@@ -171,7 +181,7 @@ for my $ln (@df) {
 		}
 	    }
 	    else{
-	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user");
+	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user$mount_t");
 	    	unlink (@deletemsg);
 	        }
 	}

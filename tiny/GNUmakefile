@@ -1,6 +1,7 @@
 include GNUmakevars
 
 CONFDIR=../../configure
+CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
 all: configure dus fnp fnpa fnpc fqdn isodate psg 
 
@@ -27,7 +28,11 @@ fnpc: fnpc.sh
 customize: configure
 	sh ./configure
 
+ifeq ($(CONFDIR_exists),ok)
+
 configure: $(CONFDIR)/start $(CONFDIR)/find-printf $(CONFDIR)/finish
 	cat $^ > $@
+
+endif
 
 include GNUmakerules

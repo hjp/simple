@@ -1,6 +1,7 @@
 include GNUmakevars
 
 CONFDIR=../../configure
+CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
 all: configure oragetsrc
 
@@ -20,8 +21,12 @@ install: $(BINDIR) $(BINDIR)/oragetsrc
 customize: configure
 	sh ./configure
 
+ifeq ($(CONFDIR_exists),ok)
+
 configure: $(CONFDIR)/start $(CONFDIR)/perl $(CONFDIR)/finish
 	cat $^ > $@
+
+endif
 
 $(BINDIR):
 	mkdir -p $@

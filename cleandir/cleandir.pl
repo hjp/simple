@@ -12,7 +12,9 @@ cleandir [-d days] [-n] [-v] [-s] directory...
 
 cleandir recursively searches each directory given on the commandline
 for files and subdirectories which have not been accessed for n days and
-deletes them.
+deletes them. It is intended to be used on /tmp and other world-writable
+directories and implements a number of checks to prevent symlink or
+directory switching attacks. It also does not cross mount points.
 
 =head1 OPTIONS
 
@@ -23,19 +25,23 @@ deletes them.
 Delete files which have not been accessed for the given number of days.
 The default is 14.
 
+=item B<-m>
+
+Consider only the last modification time of the file, not the last access time.
+
 =item B<-n>
 
 No-op. Don't delete any files.
-
-=item B<-v>
-
-Verbose. Can be repeated to increase verbosity.
 
 =item B<-s>
 
 Skip sockets and named pipes. Some programs (notably X11 and some
 databases) create sockets and named pipes in /tmp and foolishly expect 
 them to survive. This option exists to humour them.
+
+=item B<-v>
+
+Verbose. Can be repeated to increase verbosity.
 
 =back
 
@@ -55,6 +61,7 @@ use Pod::Usage;
 my $verbose = 0;
 my $nop = 0;
 my $skip_fifos = 0;
+my $mtime_only = 0;
 
 
 sub cleandir {
@@ -130,7 +137,7 @@ sub cleandir {
 		print STDERR "$0:", " " x $level, " chdir $dir/$i failed: $!\n";
 	    }
 	    
-	} elsif ($st->mtime < $since && $st->atime < $since) {
+	} elsif ($st->mtime < $since && ($st->atime < $since || $mtime_only)) {
 	    if ($nop) {
 		print "would remove $dir/$i\n";
 	    } else {
@@ -160,6 +167,7 @@ sub main {
                'verbose|v' => sub { $verbose++ },
 	       'nop|n' => \$nop,
 	       'skip-fifos|s' => \$skip_fifos,
+	       'mtime-only|m' => \$mtime_only,
 	      ) or pod2usage(2);
     pod2usage(1) if $help;
     pod2usage(2) unless (@ARGV);
@@ -178,7 +186,11 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.4  2003-05-15 10:49:33  hjp
+# Revision 1.5  2003-05-16 13:38:25  hjp
+# Included -m (mtime-only) option (CVS is nice, but only if it used).
+# Improved pod a bit.
+#
+# Revision 1.4  2003/05/15 10:49:33  hjp
 # Changed tests on skip_fifo to use _ instead of $i. The latter caused
 # extra calls to stat which clobbered the state of _ which caused spurious
 # errors/warnings on symlinks.

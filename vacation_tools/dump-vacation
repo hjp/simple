@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+use GDBM_File ;
+use POSIX qw(strftime);
+
+my $filename = $ARGV[0] ? $ARGV[0] : $ENV{HOME} . "/.vacation.db";
+print "$filename\n";
+my %db;
+tie %db, 'GDBM_File', $filename, &GDBM_WRCREAT, 0640;
+
+while (my ($k, $v) = each(%db)) {
+    my $t = unpack("L", $v);
+    my $ts = strftime("%Y-%m-%d %H:%M:%S %z", localtime($t));
+
+    print "$ts\t$k\n", ;
+}
+untie %db;

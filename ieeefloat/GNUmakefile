@@ -10,4 +10,6 @@ clean:
 distclean: clean
 	rm -f *.d
 
+ieeefloat: ieeefloat.o
+
 -include *.d

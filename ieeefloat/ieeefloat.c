@@ -1,9 +1,13 @@
 char ieeefloat_c_rcs_id[] = 
-    "$Id: ieeefloat.c,v 1.3 2002-03-18 20:41:09 hjp Exp $";
+    "$Id: ieeefloat.c,v 1.4 2003-07-17 10:36:49 hjp Exp $";
 /* ieeefloat: print binary representations of IEEE 754 FP numbers.
  *
  * $Log: ieeefloat.c,v $
- * Revision 1.3  2002-03-18 20:41:09  hjp
+ * Revision 1.4  2003-07-17 10:36:49  hjp
+ * Added <string.h>
+ * Added dependency to force .c -> .o compilation.
+ *
+ * Revision 1.3  2002/03/18 20:41:09  hjp
  * Added format specifiers
  *
  * Revision 1.2  2000/02/08 17:04:37  hjp
@@ -18,6 +22,7 @@ char ieeefloat_c_rcs_id[] =
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 #define BITS_FLT 32

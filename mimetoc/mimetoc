@@ -1,0 +1,75 @@
+#!/usr/bin/perl -w
+
+use MIME::Parser;
+
+#------------------------------
+#
+# dump_entity ENTITY, NAME
+#
+# Recursive routine for dumping an entity.
+#
+sub dump_entity {
+    my ($entity, $level) = @_;
+    my $IO;
+
+    $entity->head->unfold;
+
+    # Output the head:
+    $subject = $entity->head->get('subject') || "";
+    if ($subject) {
+	chomp($subject);
+	print ' ' x $level, "Subject: ", $subject, "\n";
+    }
+    $from = $entity->head->get('from') || "";
+    if ($from) {
+	chomp($from);
+	print ' ' x $level, "From: ", $from, "\n";
+    }
+
+    # Output the body:
+    my @parts = $entity->parts;
+    if (@parts) {                     # multipart...
+	my $i;
+	foreach $i (0 .. $#parts) {       # dump each part...
+	    dump_entity($parts[$i], $level + 1);
+	}
+    }
+    else {                            # single part...	
+
+	# Get MIME type, and display accordingly...
+	my ($type, $subtype) = split('/', $entity->head->mime_type);
+	my $body = $entity->bodyhandle;
+	my $path = $body->path;
+	my $size = ($path ? (-s $path) : '???');
+	print ' ' x $level, "Content-type: $type/$subtype ($size bytes)\n";
+    }
+    1;
+}
+
+#------------------------------
+#
+# main
+#
+sub main {
+    
+    # Create a new MIME parser:
+    my $parser = new MIME::Parser;
+    
+    # Create and set the output directory:
+    (-d ".mimedump-tmp") or mkdir ".mimedump-tmp",0700 or die "mkdir: $!";
+    (-w ".mimedump-tmp") or die "can't write to directory";
+    $parser->output_dir(".mimedump-tmp");
+    
+    # Read the MIME message:
+    $entity = $parser->read(\*STDIN) or die "couldn't parse MIME stream";
+
+    # Dump it out:
+    dump_entity($entity, 0);
+}
+exit(&main ? 0 : -1);
+
+#------------------------------
+1;
+
+
+

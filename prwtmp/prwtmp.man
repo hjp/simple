@@ -1,0 +1,48 @@
+.\" $Header: /usr/local/src/master/simple/prwtmp/prwtmp.man,v 1.1 1997-01-13 14:59:41 hjp Exp $
+.TH prwtmp 8
+.SH NAME
+prwtmp \- print contents of wtmp file
+.SH SYNOPSIS
+.C prwtmp
+.RC [ \-o ]
+.RC [ \-s start ]
+.RC [ file ]
+.SH DESCRIPTION
+.C prwtmp 
+interpretes 
+.I file
+(default is the system wtmp file, normally /etc/wtmp, /var/log/wtmp, or
+/var/adm/wtmp) as a
+wtmp file and prints one line to stdout for each record. 
+If the 
+.B \-o
+Option is given, each record is preceded by a decimal byte offset.
+If the 
+.B -s
+Option is given, processing starts at the given byte offset instead of
+the beginning of the file.
+.SH RETURN VALUE
+Exit values are:
+.RS 3
+.TP 8
+.B \00
+Successful completion.
+.PD 0
+.TP
+.B >0
+Error condition occurred.
+.RE
+.PD
+.SH FILES
+.TP
+.B /etc/wtmp
+.B /var/adm/wtmp
+.B /var/log/wtmp
+Default wtmp file (depends on OS).
+.SH BUGS
+None known. There are a few improvements planned, though:
+An option to print the file in reverse (like last(1M), but without
+coalescing matching records). Some way to select records or columns.
+NLS support would be nice, too.
+.SH SEE ALSO
+last(1M)

@@ -39,8 +39,7 @@ sub dump_entity {
 	# Get MIME type, and display accordingly...
 	my ($type, $subtype) = split('/', $entity->head->mime_type);
 	my $body = $entity->bodyhandle;
-	my $path = $body->path;
-	my $size = ($path ? (-s $path) : '???');
+	my $size = length($body->as_string);
 	print ' ' x $level, "Content-type: $type/$subtype ($size bytes)\n";
     }
     1;
@@ -59,6 +58,7 @@ sub main {
     (-d ".mimedump-tmp") or mkdir ".mimedump-tmp",0700 or die "mkdir: $!";
     (-w ".mimedump-tmp") or die "can't write to directory";
     $parser->output_dir(".mimedump-tmp");
+    $parser->output_to_core(ALL);
     
     # Read the MIME message:
     $entity = $parser->read(\*STDIN) or die "couldn't parse MIME stream";

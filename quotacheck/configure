@@ -18,7 +18,7 @@ do
 done
 if [ -z "$perl" ]
 then
-    could not find a working perl command, sorry.
+    echo could not find a working perl command, sorry.
     exit 1
 fi
 echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
@@ -30,7 +30,7 @@ echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
 for i in /bin/df /usr/bin/df /usr/bin/bdf /usr/sbin/df /usr/local/bin/df
 do
     a=`$i | awk 'NR == 1 {print $2}'`
-    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" ]
+    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" -o "$a" = "1k-blocks" ]
     then
 	echo $i works
 	df="$i"
@@ -46,7 +46,7 @@ do
 done
 if [ -z "$df" ]
 then
-    could not find a working df command, sorry.
+    echo could not find a working df command, sorry.
     exit 1
 fi
 echo "  -e 's,@@@df@@@,$df,g' \\" >> customize
@@ -69,7 +69,7 @@ do
 done
 if [ -z "$repquota" ]
 then
-    could not find a working repquota command, sorry.
+    echo could not find a working repquota command, sorry.
     exit 1
 fi
 echo "  -e 's,@@@repquota@@@,$repquota,g' \\" >> customize
@@ -98,8 +98,14 @@ EOF
 done
 if [ -z "$sendmail" ]
 then
-    could not find a working sendmail command, sorry.
+    echo could not find a working sendmail command, sorry.
     exit 1
 fi
 echo "  -e 's,@@@sendmail@@@,$sendmail,g' \\" >> customize
 
+
+
+################################################################
+# finish: 
+#	add a blank line to customize
+echo >> customize

@@ -12,7 +12,7 @@ clean:
 distclean: clean
 	rm -f customize
 
-install: $(BINDIR) $(BINDIR)/cleandir
+install: $(BINDIR) $(BINDIR)/cleandir $(MAN1DIR)/cleandir.1
 
 %: %.pl customize
 	sh ./customize < $< > $@

@@ -85,7 +85,7 @@ sub cleandir {
 	}
 
 	# Skip sockets and pipes
-	if ($skip_fifos && (-p $i || -S $i)) {
+	if ($skip_fifos && (-p _ || -S _)) {
 		$notremoved++;
 		next;
 	}
@@ -178,7 +178,12 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.3  2003-05-14 11:49:56  hjp
+# Revision 1.4  2003-05-15 10:49:33  hjp
+# Changed tests on skip_fifo to use _ instead of $i. The latter caused
+# extra calls to stat which clobbered the state of _ which caused spurious
+# errors/warnings on symlinks.
+#
+# Revision 1.3  2003/05/14 11:49:56  hjp
 # Added yet another patch by Chris Mason.
 #
 # Added POD.

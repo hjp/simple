@@ -4,7 +4,7 @@
 
 sub dumpstats {
     print "-" x 60, "\n";
-    print "$time\n";
+    print "$time_last\n";
     for $i (sort { $sum{$a} <=> $sum{$b} } keys (%sum)) {
 	printf("\t%6d %s\n", $sum{$i}, $i);
     }

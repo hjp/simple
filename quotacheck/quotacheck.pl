@@ -1,16 +1,22 @@
-#!@@@perl@@@
+#!@@@perl@@@ -w 
+
+use strict;
 
 use Getopt::Std;
+my $time=time;
+my @time=localtime($time);
+my $hostname;
 
 sub warnmsg {
-    my ($mount, $usage, $soft, $hard, $grace, $unit) = @_;
-    %dosdrv = (
+    my ($mount, $usage, $soft, $hard, $grace, $unit, $user) = @_;
+    my %dosdrv = (
 	'/wifosv/dosprogs' => 'H:',
 	'/wsrdb/users'     => 'J:',
 	'/wifosv/users'    => 'K:',
 	'/usr/local/www'   => 'W:',
     );
 
+    my $wo;
     if ($dosdrv{$mount}) {
 	$wo = 'Netzplatte ' . $dosdrv{$mount};
     } else {
@@ -19,8 +25,8 @@ sub warnmsg {
 
 
     my $msg = "Sie haben auf $wo Ihr in Disk Quotas gesetztes Limit\n" .
-	    "überschritten. ";
-
+	    "überschritten. \n";
+	    
     if ($grace eq "EXPIRED" or $usage >= $hard-2) {
 	$msg .= "Sie können dort KEINE Files mehr anlegen.\n" ;
     } else {
@@ -29,9 +35,18 @@ sub warnmsg {
 	$msg .= "Sie können noch " .
 		(int (($hard - $usage) * 10 + 0.5) / 10) . " $unit anlegen.\n" ;
     }
+    my $mount_t = $mount;
+    $mount_t =~ s|/|_|g;
+
     $msg .= "\nBei dringendem Bedarf können Sie sofort zusätzlichen Platz schaffen,\n" .
     	    "indem Sie auf $wo Files löschen, komprimieren oder auf eine\n" .
 	    "andere Netzplatte verschieben.\n" .
+	    "\n" .
+	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
+	    "http://sww.wsr.ac.at/intranet/quotas/$user$mount_t.gif ansehen. \n" .
+	    "Die Quotas die Sie verwendet haben werden rot angezeigt. Außerdem zeigen\n" .
+	    "die Softquotas, die Grenze an, die Sie überschritten haben und die Hardquotas\n" .
+	    "die Obergrenze, die Sie nicht überschreiten können. \n" .
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
 	    "Systemadministratoren unterstützen:\n" .
@@ -40,26 +55,63 @@ sub warnmsg {
     return $msg;
 }
 
+my %opts;
+
+sub sendmail
+{
+    my ($user, $msg, $mount) = @_;
+
+    my @startgraph= 
+	("/usr/local/dfstat/quotagraph",
+	    "--fs=$mount",
+	    "--user=$user",
+	    "--data=b",
+	    glob("/usr/local/dfstat/quota.stat.????-??")
+	);
+    if (system (@startgraph) != 0) {
+	die "cannot execute @startgraph";
+    }
+
+    if ($opts{'d'}) {
+	open (SENDMAIL, ">&1");
+    } else {
+	open (SENDMAIL, "|@@@sendmail@@@ -t -i");
+    }
+    if ($opts{'a'}) {
+	print SENDMAIL "To: <system\@wsr.ac.at>\r\n";
+	print SENDMAIL "Subject: User $user: Disk Quotas überschritten\r\n";
+    } else {
+	print SENDMAIL "To: <$user\@wsr.ac.at>\r\n";
+	print SENDMAIL "Cc: <system\@wsr.ac.at>\r\n";
+	print SENDMAIL "Subject: Disk Quotas überschritten\r\n";
+       
+    }
+    print SENDMAIL "Reply-To: <system\@wsr.ac.at>\r\n";
+    print SENDMAIL "\r\n";
+    print SENDMAIL "$msg\r\n";
+}
+
 getopts('ad', \%opts);
 
 $hostname=`hostname`;
 chomp($hostname);
 open (DF, "@@@df@@@ |") or die "cannot call @@@df@@@: $!";
 
-$fs = $/;
+my $fs = $/;
 undef ($/);
-$df = <DF>;
+my $df = <DF>;
 close(DF);
 $/ = $fs;
 
 $df =~ s/\n[ \t]+/ /mg;
-@df = split(/\n/, $df); 
-for $ln (@df) {
-    ($fs, $total, $used, $free, $pct, $mount) = split(/\s+/, $ln);
+my @df = split(/\n/, $df); 
+for my $ln (@df) {
+    my ($fs, $total, $used, $free, $pct, $mount) = split(/\s+/, $ln);
     if ($fs =~ m|^/dev/|) {
 	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
 	while (<REPQUOTA>) {
-	    $msg = "";
+	    my $msg = "";
+	    my $user;
 	    if (/(\w+) \s+ -- \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+
 	         (\d+)\s+(\d+)\s+(\d+)
@@ -71,7 +123,7 @@ for $ln (@df) {
 		 /x) {
 		print "block limit: $1: $2 > ($3 $4) $5\n";
 		$user = $1;
-		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5/1024, "MB");
+		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
 
 	    } elsif  (/(\w+) \s+ -\+ \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+
@@ -79,40 +131,46 @@ for $ln (@df) {
 		 /x) {
 		print "file limit: $1: $5 > ($6 $7) $8\n";
 		$user = $1;
-		$msg = warnmsg($mount, $5, $6, $7, $8, "Files");
+		$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
 	    } elsif  (/(\w+) \s+ \+\+ \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))\s+
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))
 		 /x) {
 		print "block limit: $1: $2 > ($3 $4) $5\n";
 		$user = $1;
-		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5/1024, "MB");
+		$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
 		print "file limit: $1: $6 > ($7 $8) $9\n";
-		$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files");
+		$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files", $user);
 	    } else {
 		if ($. > 2) {	# ignore header lines
 		    print "$mount: $.: unparseable: $_";
 		}
 	    }
 	    if ($msg) {
-		if ($opts{'d'}) {
-		    open (SENDMAIL, ">&1");
-		} else {
-		    open (SENDMAIL, "|@@@sendmail@@@ -t -i");
+		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user";
+
+		if (!-e $timestamp) {
+		    sendmail($user, $msg, $mount);	
+		    open (PMSG, ">$timestamp")
+			or die "cannot open $timestamp: $!";
+		    print PMSG (@time);
+		    close (PMSG);
+		    
+		    }
+		else{
+		    my $comp = -A $timestamp;
+		    print STDERR "comp = $comp\n";
+		    if ($comp > 5)
+		    {
+			sendmail($user, $msg, $mount);
+		    }
 		}
-		if ($opts{'a'}) {
-		    print SENDMAIL "To: <system\@wsr.ac.at>\r\n";
-		    print SENDMAIL "Subject: User $user: Disk Quotas überschritten\r\n";
-		} else {
-		    print SENDMAIL "To: <$user\@wsr.ac.at>\r\n";
-		    print SENDMAIL "Cc: <system\@wsr.ac.at>\r\n";
-		    print SENDMAIL "Subject: Disk Quotas überschritten\r\n";
-		}
-		print SENDMAIL "Reply-To: <system\@wsr.ac.at>\r\n";
-		print SENDMAIL "\r\n";
-		print SENDMAIL "$msg\r\n";
 	    }
-		
+	    else{
+	    	my $user;
+	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user");
+	    	unlink (@deletemsg);
+	        }
 	}
 	close (REPQUOTA);
     }

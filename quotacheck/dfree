@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+#
+# dfree - samba helper script for soft quota aware disk free stats
+#
+# Portability: HP-UX specific.
+
+
+# send log file to /dev/null unless we want to debug this script.
+umask(0077);
+open (LOG, ">/dev/null") or die;
+print LOG "$< $>\n";
+
+# who am I?
+$logname = getpwuid($>);
+print LOG "$logname\n";
+
+# where am I?
+
+open (BDF, "/bin/bdf \"${ARGV[0]}\"|") or die;
+while (<BDF>) {
+    chomp;
+    @x = split;
+    $thismount = $x[-1];
+    $total = $x[-5];
+    $avail = $x[-3];
+}
+close (BDF);
+print LOG "$thismount\n";
+
+
+
+
+open (QUOTA, "/bin/quota -v $logname|") or die;
+while(<QUOTA>) {
+    chomp;
+    if (m|^/\S+$|) {
+	$mount = $_;
+    } elsif (m|^\s+|) {
+	($usage, $quota) = split;
+	if ($mount eq $thismount) {
+	    print $quota, " ", $quota - $usage, "\n";
+	    print LOG $quota, $quota - $usage;
+	    exit 0;
+	}
+    } elsif (m|/(\S+)\s+(\d+)\s+(\d+)|) {
+	$mount = $1;
+	$usage = $2;
+	$quota = $3;
+	if ($mount eq $thismount) {
+	    print $quota, " ", $quota - $usage, "\n";
+	    print LOG $quota, $quota - $usage;
+	    exit 0;
+	}
+    }
+}
+close (QUOTA);
+
+print "$total $avail\n";
+close (LOG);

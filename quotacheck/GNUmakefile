@@ -10,6 +10,7 @@ distclean: clean
 	rm -f customize
 
 install: $(SBINDIR) $(SBINDIR)/quotacheck $(SBINDIR)/quotastat \
+	$(SBINDIR)/dfree \
 	$(SBINDIR)/quotasanitycheck $(MAN8DIR)/quotasanitycheck.8
 
 %: %.pl customize

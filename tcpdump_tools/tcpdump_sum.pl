@@ -11,7 +11,7 @@ sub dumpstats {
 }
 
 while (<>) {
-    if (m/^(\d\d:\d\d):\d\d\.\d{6} ([-\w\.]+) \> ([-\w\.]+): (.*)/) {
+    if (m/^(\d\d:\d\d):\d\d\.\d{6} . ([-\w\.]+) \> ([-\w\.]+): (.*)/) {
 	$time = $1;
 	$from = $2;
 	$to = $3;
@@ -28,7 +28,7 @@ while (<>) {
 	    # tcp ack 
 	    $sum{$from . " > " . $to} += 0;
 	} else {
-	    print stderr "unparseable2: $_";
+	    print stderr "unparseable2: $rest\n";
 	}
 	    
 	    

@@ -1,0 +1,10 @@
+#!/bin/sh
+while true
+do
+	tcpdump -i eth2 -p -e -s 2000 -c 10000 > dump.`isodate`
+	while [ `du -s . | awk '{print $1}'` -gt 1000000 ]
+	do
+		file=`ls -tr dump.????-??-??T??:??:?? | head -1`
+		rm $file
+	done
+done

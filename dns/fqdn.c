@@ -17,7 +17,7 @@
 
 #include "hstrerror.h"
 
-char cvs_id[] = "$Id: fqdn.c,v 1.2 2002-08-14 19:03:52 hjp Exp $";
+char cvs_id[] = "$Id: fqdn.c,v 1.3 2002-08-14 19:06:39 hjp Exp $";
 
 char *cmnd;
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     int i;
     int rc = 0;
     char hostname[256];
-    char *fake_argv[] = { argv[0], hostname, NULL };
+    char *fake_argv[] = { NULL, hostname, NULL };
 
     cmnd = argv[0];
 

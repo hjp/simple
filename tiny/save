@@ -1,0 +1,5 @@
+#!/bin/sh
+for i in "$@"
+do
+    mv "$i" "$i.orig" && cp -p "$i.orig" "$i"
+done

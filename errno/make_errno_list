@@ -1,0 +1,11 @@
+echo '#include <errno.h>' > errno_list.c
+echo '#include "errno_list.h"' >> errno_list.c
+echo 'errno_T wke[] = {' >> errno_list.c
+for e in `cat errno.list`
+do
+    echo "    #if defined($e)" >> errno_list.c
+    echo "        { $e, \"$e\" }," >> errno_list.c
+    echo "    #endif" >> errno_list.c
+done
+echo '};' >> errno_list.c
+echo 'const size_t wke_nr = sizeof(wke)/sizeof(wke[0]);' >> errno_list.c

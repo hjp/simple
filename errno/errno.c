@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "errno_list.h"
+
 char *cmnd;
 
 static void usage(void) {
@@ -16,15 +18,26 @@ int main(int argc, char **argv) {
     cmnd = argv[0];
 
     if (argc <= 1) {
-	int e;
-	for (e = 0;; e++) {
-	    printf("%d\t%s\n", e, strerror(e));
+	int i;
+	for (i = 0; i < wke_nr; i++) {
+	    int e = wke[i].number;
+	    char *d = wke[i].define;
+	    printf("%d\t%s\t%s\n", e, d, strerror(e));
 	}
     } else {
 	for (i = 1; i < argc; i++) {
 	    int e = strtoul(argv[i], NULL, 0);
+	    char *d = "(unknown)";
+	    int j;
 
-	    printf("%d\t%s\n", e, strerror(e));
+	    for (j = 0; j < wke_nr; j++) {
+		if (wke[j].number == e) {
+		    d = wke[j].define;
+		    break;
+		}
+	    }
+
+	    printf("%d\t%s\t%s\n", e, d, strerror(e));
 	}
     }
     return 0;

@@ -17,7 +17,7 @@
 
 #include "hstrerror.h"
 
-char cvs_id[] = "$Id: fqdn.c,v 1.3 2002-08-14 19:06:39 hjp Exp $";
+char cvs_id[] = "$Id: fqdn.c,v 1.4 2002-09-19 20:13:48 hjp Exp $";
 
 char *cmnd;
 
@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
 
     for (i = 1; i < argc; i++) {
 	struct hostent *he = gethostbyname(argv[i]);
+	int found = 0;
 
 	if (!he) {
 	    fprintf(stderr, "%s: cannot resolve %s: %s\n",
@@ -54,7 +55,26 @@ int main(int argc, char **argv) {
 	    continue;
 	}
 
-	printf("%s\n", he->h_name);
+	if (strchr(he->h_name, '.')) {
+	    printf("%s\n", he->h_name);
+	    found = 1;
+	} else {
+	    char **a;
+	    fprintf(stderr, "Canonical name doesn't contain a dot.\n");
+	    fprintf(stderr, "Please shoot the administrator of this box.\n");
+	    fprintf(stderr, "In the mean time I try to find a suitable alias.\n");
+	    for (a = he->h_aliases; !found && a; a++) {
+		if (strchr(*a, '.')) {
+		    printf("%s\n", *a);
+		    found = 1;
+		}
+	    }
+	    if (!found) {
+		fprintf(stderr, "No alias, either. Consider more painful methods than shooting.\n");
+		rc++;
+	    }
+	}
+
     }
     return rc;
 }

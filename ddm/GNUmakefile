@@ -1,11 +1,11 @@
-# $Id: GNUmakefile,v 1.2 2000-06-04 16:11:12 hjp Exp $
+# $Id: GNUmakefile,v 1.3 2000-06-04 16:33:20 hjp Exp $
 
 include GNUmakevars
 
 ddm: ddm.o
 	$(CC) $^ $(ANTLIB) -o $@
 
-ddm.o: ddm.c cfg/mnttab.h
+ddm.o: ddm.c
 
 clean:
 	rm ddm ddm.o
@@ -20,7 +20,13 @@ include GNUmakerules
 -include ddm.d
 
 # $Log: GNUmakefile,v $
-# Revision 1.2  2000-06-04 16:11:12  hjp
+# Revision 1.3  2000-06-04 16:33:20  hjp
+# Removed MNTTAB autodetection again as it seems to be already defined.
+# Don't skip rest of mountpoints if one is not accessible.
+# chdir to / while sleeping to avoid blocking automounters
+# increased default sleep interval to 1 hour max.
+#
+# Revision 1.2  2000/06/04 16:11:12  hjp
 # Added autodetection of /etc/m(nt)?tab.
 #
 # Revision 1.1  2000/06/04 15:53:18  hjp

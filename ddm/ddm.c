@@ -1,5 +1,5 @@
 char ddm_c_rcs_id[] =
-    "$Id: ddm.c,v 1.3 2000-06-04 16:19:00 hjp Exp $";
+    "$Id: ddm.c,v 1.4 2000-06-04 16:33:21 hjp Exp $";
 /* 
  * ddm - disk delay monitor
  *
@@ -19,8 +19,6 @@ char ddm_c_rcs_id[] =
 #include <unistd.h>
 
 #include <ant/da.h>
-
-#include "cfg/mnttab.h"
 
 static double gettimestamp(void) {
     struct timeval tm;
@@ -75,7 +73,7 @@ int main(int argc, char**argv) {
 	    if (chdir(dirs[i]) == -1) {
 		fprintf(stderr, "%s: %.6f: chdir %s failed: %s\n",
 			argv[0], gettimestamp(), dirs[i], strerror(errno));
-		break;
+		continue;
 	    }
 	    fprintf(stderr, "%s: %.6f: chdir %s ok\n",
 		    argv[0], gettimestamp(), dirs[i]);
@@ -83,7 +81,7 @@ int main(int argc, char**argv) {
 	    if ((dp = opendir(".")) == NULL) {
 		fprintf(stderr, "%s: %.6f: opendir %s failed: %s\n",
 			argv[0], gettimestamp(), dirs[i], strerror(errno));
-		break;
+		continue;
 	    }
 	    for (j = 0;(de = readdir(dp)); j++) {
 		DA_MKIND_INI(entries, j, NULL);
@@ -103,7 +101,9 @@ int main(int argc, char**argv) {
 	    }
 	}
 
-	sleeptime = rand() * 60.0 / RAND_MAX;
+	chdir("/");
+
+	sleeptime = rand() * 3600.0 / RAND_MAX;
 	fprintf(stderr, "%s: %.6f: sleeping %d seconds\n",
 		argv[0], gettimestamp(), sleeptime);
 	sleep(sleeptime);
@@ -115,7 +115,13 @@ int main(int argc, char**argv) {
 
 /* 
  * $Log: ddm.c,v $
- * Revision 1.3  2000-06-04 16:19:00  hjp
+ * Revision 1.4  2000-06-04 16:33:21  hjp
+ * Removed MNTTAB autodetection again as it seems to be already defined.
+ * Don't skip rest of mountpoints if one is not accessible.
+ * chdir to / while sleeping to avoid blocking automounters
+ * increased default sleep interval to 1 hour max.
+ *
+ * Revision 1.3  2000/06/04 16:19:00  hjp
  * Fixed order of args in fprintf (segfault).
  *
  * Revision 1.2  2000/06/04 16:11:12  hjp

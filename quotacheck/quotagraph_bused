@@ -1,0 +1,9 @@
+#!/bin/sh
+if [ $# -ne 2 ] 
+then
+    echo "Usage: $0 user fs" >&2 
+    exit 1
+fi
+./quotagraph --user=$1 --fs=$2 --data=bused \
+    `ls /usr/local/dfstat/quota.stat.* | tail -12`
+mv quotastat.gif $1.gif

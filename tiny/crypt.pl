@@ -1,5 +1,4 @@
-#!@@@perl@@@
-use warnings;
+#!@@@perl@@@ -w
 use strict;
 
 unless (@ARGV == 2) {

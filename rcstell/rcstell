@@ -1,0 +1,55 @@
+#!/bin/sh
+
+if [ $# -gt 1 ]
+then
+	echo "Usage is: $0 [directory]" >&2
+	exit 1
+fi
+
+NAME=`basename $0`
+
+if [ $# -eq 1 ]
+then
+	DIR=`echo "$1" | sed -e 's+/RCS/*$++'`
+	cd "$DIR"
+fi
+
+if [ ! -d RCS ]
+then
+	echo "$0: no RCS directory" >&2
+	exit 2
+fi
+
+OIFS="$IFS"
+IFS='
+'
+ALLFILES=`ls RCS/* | sed -e 's+^RCS/\(.*\),v+\1+'`
+FILES=`grep '^locks$' /dev/null RCS/* | sed -e 's+^RCS/\(.*\),v:locks+\1+'`
+FILEDIFF=`( echo "$ALLFILES"; echo "$FILES" ) | sort | uniq -u`
+
+for I in $FILES
+do
+	IFS=${OIFS}:';'
+	set `awk '/^locks/,/;$/ { print }' RCS/${I},v`
+	LOCKER=$2
+	VERSION=$3
+	case "$NAME"
+	in
+		rcsinfo) echo "$I: version $VERSION locked by $LOCKER" ;;
+		rcstell) echo $I ;;
+		*)	 echo "Internal error:  command $NAME unknown" >&2
+			 exit 1
+			 ;;
+	esac
+done
+IFS='
+'
+for I in $FILEDIFF
+do
+	case "$NAME"
+	in
+		rcsinfo) echo $I;;
+	esac
+done
+
+exit 0

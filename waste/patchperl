@@ -1,0 +1,13 @@
+perl=`which perl`
+if [ $# -ne 2 ]
+then
+	echo "Usage $0 source target" >&2
+	exit 1
+fi
+if [ -z "$perl" ]
+then
+	echo "$0: cannot find perl binary" >&2
+	exit 1
+fi
+sed -e "s,@@@perl@@@,$perl," < $1 > $2
+exit 0

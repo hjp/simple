@@ -1,9 +1,12 @@
 char ieeefloat_c_rcs_id[] = 
-    "$Id: ieeefloat.c,v 1.2 2000-02-08 17:04:37 hjp Exp $";
+    "$Id: ieeefloat.c,v 1.3 2002-03-18 20:41:09 hjp Exp $";
 /* ieeefloat: print binary representations of IEEE 754 FP numbers.
  *
  * $Log: ieeefloat.c,v $
- * Revision 1.2  2000-02-08 17:04:37  hjp
+ * Revision 1.3  2002-03-18 20:41:09  hjp
+ * Added format specifiers
+ *
+ * Revision 1.2  2000/02/08 17:04:37  hjp
  * Added -f and -d options to force input to be float or double format.
  *
  * Revision 1.1  1998/03/20 20:09:53  hjp
@@ -50,9 +53,11 @@ typedef unsigned long long int doubleint;
 
 char *cmnd;
 
+char *floatformat  = "%24.7g";
+char *doubleformat = "%24.17g";
 
 static void usage(void) {
-    fprintf(stderr, "Usage: %s [-f|-d] fp-number ...\n", cmnd);
+    fprintf(stderr, "Usage: %s [-f|-d] [-F format] [-D format] fp-number ...\n", cmnd);
     exit(1);
 }
 
@@ -74,7 +79,8 @@ static void printfloat(float f) {
 
     u.f = f;
 
-    printf("%24.7g: ", f);
+    printf(floatformat, f);
+    printf(": ");
     printf("%c ", (u.i & SIGN_FLT) ? '-' : '+');
     u.i &= ~SIGN_FLT;
     e = u.i >> MANT_FLT;
@@ -102,7 +108,8 @@ static void printdouble(double f) {
 
     u.f = f;
 
-    printf("%24.17g: ", f);
+    printf(doubleformat, f);
+    printf(": ");
     printf("%c ", (u.i & SIGN_DBL) ? '-' : '+');
     u.i &= ~SIGN_DBL;
     e = u.i >> MANT_DBL;
@@ -168,6 +175,16 @@ int main(int argc, char**argv) {
 	    continue;
 	} else if (strcmp(argv[i], "-d") == 0) {
 	    convfloat = 0;
+	    continue;
+	} else if (strcmp(argv[i], "-F") == 0) {
+	    if (!argv[i+1]) usage();
+	    floatformat = argv[i+1];
+	    i++;
+	    continue;
+	} else if (strcmp(argv[i], "-D") == 0) {
+	    if (!argv[i+1]) usage();
+	    doubleformat = argv[i+1];
+	    i++;
 	    continue;
 	} 
 

@@ -4,6 +4,7 @@
 
 #include "errno_list.h"
 
+char errno_c_rcs_id[] = "$Id: errno.c,v 1.5 2003-02-27 13:28:45 hjp Exp $";
 char *cmnd;
 
 int main(int argc, char **argv) {

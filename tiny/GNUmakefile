@@ -3,6 +3,8 @@
 CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
+pre: GNUmakevars GNUmakerules 
+
 GNUmakevars: GNUmakevars.sh
 	sh ./$^ > $@
 GNUmakerules: GNUmakerules.sh
@@ -11,7 +13,10 @@ GNUmakerules: GNUmakerules.sh
 all: configure dus fnp fnpa fnpc isodate psg save crypt
 
 clean:
-	rm fnp fnpa fnpc customize crypt
+	rm -f fnp fnpa fnpc customize crypt
+
+distclean: clean
+	rm -f GNUmakevars GNUmakerules
 
 install: \
 	$(BINDIR)/crypt \

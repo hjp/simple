@@ -17,6 +17,7 @@ sub warnmsg {
 	$wo = "$mount (Host $hostname)";
     }
 
+
     my $msg = "Sie haben auf $wo Ihr in Disk Quotas gesetztes Limit\n" .
 	    "überschritten. ";
 
@@ -26,7 +27,7 @@ sub warnmsg {
 	$grace =~ s/days/Tage/g;
 	$grace =~ s/hours/Stunden/g;
 	$msg .= "Sie können noch " .
-		($hard - $usage) . " $unit anlegen.\n" ;
+		(int (($hard - $usage) * 10 + 0.5) / 10) . " $unit anlegen.\n" ;
     }
     $msg .= "\nBei dringendem Bedarf können Sie sofort zusätzlichen Platz schaffen,\n" .
     	    "indem Sie auf $wo Files löschen, komprimieren oder auf eine\n" .

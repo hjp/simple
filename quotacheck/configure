@@ -27,7 +27,7 @@ echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
 ################################################################
 # find a working df:
 #
-for i in /bin/df /usr/bin/df /usr/sbin/df /usr/local/bin/df
+for i in /bin/df /usr/bin/df /usr/bin/bdf /usr/sbin/df /usr/local/bin/df
 do
     a=`$i | awk 'NR == 1 {print $2}'`
     if [ "$a" = "kbytes" -o "$a" = "1024-blocks" ]
@@ -50,6 +50,7 @@ then
     exit 1
 fi
 echo "  -e 's,@@@df@@@,$df,g' \\" >> customize
+
 
 ################################################################
 # find repquota:

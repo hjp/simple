@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+my $min = 0xFFFF_FFFF;
+my $max = 0x0000_0000;
+
+for (@ARGV) {
+    if (/(\d+)\.(\d+)\.(\d+)\.(\d+)/) {
+	my $adr = $1 * 0x100_0000 + $2 * 0x1_0000 + $3 * 0x100 + $4;
+	$max = $adr if ($adr > $max);
+	$min = $adr if ($adr < $min);
+    }
+}
+
+my $diff = $min ^ $max;
+
+# printf "min = %08x max = %08x diff = %08x\n", $min, $max, $diff;
+
+my $netmaskbits = 32;
+my $netmask = 0xFFFF_FFFF;
+
+while ($diff > 0) {
+    $netmaskbits--;
+    $diff >>= 1;
+    $netmask <<= 1;
+}
+
+my $net = $min & $netmask;
+my $bcast = $min | ~$netmask;
+
+printf "net = %s/%d (%s/%s) bcast = %s\n",
+       dottedquad($net),
+       $netmaskbits,
+       dottedquad($net),
+       dottedquad($netmask),
+       dottedquad($bcast);
+
+sub dottedquad {
+    my ($adr) = @_;
+    return sprintf "%d.%d.%d.%d",
+		   ($adr >> 24) & 0xFF,
+		   ($adr >> 16) & 0xFF,
+		   ($adr >>  8) & 0xFF,
+		   ($adr >>  0) & 0xFF;
+}
+
+exit(0);

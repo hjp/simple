@@ -5,6 +5,7 @@ install: \
 	$(BINDIR)/gethostbyname \
 	$(BINDIR)/axfr \
 	$(BINDIR)/fqdn \
+	$(BINDIR)/minnet \
 
 
 clean:

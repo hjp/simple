@@ -1,5 +1,8 @@
 #include <netdb.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "hstrerror.h"
 
 char *cmnd;
 
@@ -36,7 +39,7 @@ int main(int argc, char **argv) {
 	}
 	for (a = he->h_addr_list; *a; a++) {
 	    int j;
-	    printf("\tAddress:   ");
+	    printf("\tAddress:    ");
 	    for (j = 0; j < he->h_length; j++) {
 		printf("%s%d", j ? "." : "", (unsigned char)(*a)[j]);
 	    }

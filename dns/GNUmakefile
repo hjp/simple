@@ -10,4 +10,11 @@ clean:
 distclean: clean
 	rm -f *.d
 
+cfg/%:
+	$(MAKE) -C cfg all
+
+gethostbyname: gethostbyname.o hstrerror.o
+
+hstrerror.o: cfg/have_hstrerror.h
+
 -include *.d

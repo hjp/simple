@@ -12,5 +12,6 @@ scat.h: scat.en.msg
 	gencat $@ $^
 
 clean:
-	rm -f *.cat *.o scat core
-install: $(BINDIR)/time_t
+	rm -f *.cat *.o scat core scat.h
+
+install: $(BINDIR)/scat

@@ -16,6 +16,7 @@ distclean: clean
 install: $(SBINDIR) $(SBINDIR)/quotacheck $(SBINDIR)/quotastat \
 	$(SBINDIR)/dfree \
 	$(SBINDIR)/quotasanitycheck $(MAN8DIR)/quotasanitycheck.8 \
+	/usr/local/dfstat/ \
 	/usr/local/dfstat/quotagraph 
 
 %: %.pl customize
@@ -29,7 +30,7 @@ install: $(SBINDIR) $(SBINDIR)/quotacheck $(SBINDIR)/quotastat \
 customize: configure
 	sh ./configure
 
-$(SBINDIR):
+$(SBINDIR) /usr/local/dfstat/:
 	mkdir -p $@
 
 /usr/local/dfstat/%: %

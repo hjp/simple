@@ -3,7 +3,7 @@ use strict;
 use POSIX;
 use Time::HiRes qw(gettimeofday);
 my $use_microseconds;
-if ($ARGV[0] eq '-u') {
+if (($ARGV[0] || "") eq '-u') {
     $use_microseconds = 1;
     shift;
 }

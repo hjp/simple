@@ -1,4 +1,4 @@
-include GNUmakerules
+include GNUmakevars
 
 all: chartab ctype-test
 
@@ -7,3 +7,5 @@ ctype-test:
 clean:
 	rm chartab
 install: $(BINDIR)/chartab $(BINDIR)/ctype-test
+
+include GNUmakerules

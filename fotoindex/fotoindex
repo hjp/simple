@@ -1,140 +1,57 @@
 #!/usr/local/bin/perl
+#
+# Combine several images into an index image (e.g., for use as an imagemap).
+#
+# Usage: fotoindex [-o outputfile] [templatefile]
+#
+# The first three lines give the width and height of the thumbnails and
+# the number of thumbnails per row. The remaining lines are file names
+# of the images to be combined.
 
-sub splitfields {
-    my ($line) = @_;
-    my @result = ();
-    my $field;
-
-    $off = 0;
-    $field =~ s/\r?\n//;
-
-    for (;;) {
-	if (substr($line, $off, 1) eq '"') {
-	    $noff = index($line, '"', $off+1);
-	    if (!$noff) {
-		print STDERR "$0: splitfields: unterminated field at line $.\n";
-		exit(1);
-	    }
-	    $field = substr($line, $off+1, $noff - $off - 1);
-	    push (@result, $field);
-	    #print "splitfields: found field = $field\n";
-	    $off = $noff + 1;
-	} else {
-	    if ($noff = index($line, ';', $off)) {
-		$field = substr($line, $off, $noff - $off);
-		$off = $noff;
-	    } else {
-		$field = substr($line, $off);
-		$off = length($line);
-	    }
-	    push (@result, $field);
-	    #print "splitfields: found field = $field\n";
-	}
-	if (substr($line, $off, 1) ne ';') { return @result }
-	$off++;
-    }
-
-    return @result;
-
-}
-
-$telreg = "/usr/local/www/offline/wifo/skel/telreg.txt";
-$fotodir = "/usr/local/www/wifo/fotos";
+open(STDERR, ">/tmp/fotoindex.$$.debug");
 
 $giftopnm = "/usr/local/bin/giftopnm";
-$pnmcat = "/usr/local/bin/pnmcat";
-$pnmfile = "/usr/local/bin/pnmfile";
 $pnmscale = "/usr/local/bin/pnmscale";
-$ppmquant = "/usr/local/bin/ppmquant";
-$ppmtogif = "/usr/local/bin/ppmtogif";
+$pbmmake = "/usr/local/bin/pbmmake";
+$pnmpaste = "/usr/local/bin/pnmpaste";
 $cjpeg = "/usr/local/bin/cjpeg";
 
-chdir($fotodir) or die "cannot cd to $fotodir: $!";
+if ($ARGV[0] eq "-o") {
+    shift;
+    $outputredirect = ">" . shift;
+}
 
-open (TELREG, $telreg) or die "cannot open $telreg: $!";
+@file = (<>);
+chomp(@file);
 
-$fields = <TELREG>;
-@fields = splitfields($fields);
-
-for ($i = 0; $i <= $#fields; $i++) {
-    if ($fields[$i] eq "Familienname") {
-	$sni = $i;
-    } elsif ($fields[$i] eq "Vorname") {
-	$fni = $i;
-    } elsif ($fields[$i] eq "login") {
-	$lni = $i;
+# Remove empty and comment lines
+for ($i = 0; $i <= $#file;) {
+    if ($file[$i] =~ m/^(\#|\s*$)/ ) {
+	splice(@file, $i, 1);
+    } else {
+	$i++;
     }
 }
 
-while (<TELREG>) {
-    @fields = splitfields($_);
+$tnw = shift(@file);
+$tnh = shift(@file);
+$fw = shift(@file);
+$fh = int(($#file + 1 + ($fw - 1)) / $fw);
 
-    $login = $fields[$lni];
-    #print "$login";
-    if (-f "$login.gif") {
-	#print " exists";
-	$surname{$login} = $fields[$sni];
-	$firstname{$login} = $fields[$fni];
-    }
-    #print "\n";
-}
-
-@sortedlogins = sort { "${surname{$a}} ${firstname{$a}}" cmp "${surname{$b}} ${firstname{$b}}" } keys(%surname);
-
-$fw = 9;
-$fh = int(($#sortedlogins + 1 + ($fw - 1)) / $fw);
+system ("$pbmmake " . $fw * $tnw . " " . $fh * $tnh . "> /tmp/fotoindex.$$.1.pnm");
 
 
-$protogif = $sortedlogins[0] . ".gif";
-
-open (PNMFILE, "$giftopnm  $protogif  | $pnmfile |") 
-    or die "cannot get size of $protogif: $!";
-
-$pnmfileout = <PNMFILE>;
-close($pnmfile);
-
-if ($pnmfileout =~ m/P[PGB]M raw, (\d+) by (\d+)  maxval/) {
-    $gifw = int ($1 / 2);
-    $gifh = int ($2 / 2);
-} else {
-    printf STDERR "$0: cannot size from pnmfile output $pnmfileout\n";
-    exit(1);
-}
-
-open(HTML, ">map.html") or die "cannot open map.html for writing: $!";
-
-print HTML "<html><head><title>Wifo: Photo Gallery</title></head>\n";
-print HTML "<body>\n";
-print HTML qq|  <img src="map.jpg" usemap="#map" width=|,
-	   $fw * $gifw, qq| height=|, $fh * $gifh, qq| border=0>\n|;
-print HTML qq|<map name="map">\n|;
-
-
-@col = ();
-for ($i = 0; $i <= $#sortedlogins / $fw; $i ++) {
-    @row = ();
+for ($i = 0; $i < $fh; $i ++) {
     for ($j = 0; $j < $fw; $j++) {
-	$login = $sortedlogins[$i * $fw + $j];
-	if ($login ne "") {
-	    $sn = $surname{$login};
-	    $fn = $firstname{$login};
-	    system ("$giftopnm $login.gif | $pnmscale 0.5 > $login.pnm");
-	    push (@row, "$login.pnm");
-	    print HTML qq|<area shape=rect coords="|,
-		       $j * $gifw, ",", $i * $gifh, " ",
-		       ($j+1) * $gifw - 1, ",", ($i + 1) * $gifh - 1, 
-		       qq{" href="$login.gif" alt="$fn $sn">\n};
+	$pic = $file[$i * $fw + $j];
+	if (-f $pic) {
+	    $cmnd = "$giftopnm $pic | $pnmscale -xysize $tnw $tnh > $pic.$$.pnm";
+	    system ($cmnd);
+	    system ("$pnmpaste $pic.$$.pnm " . $j * $tnw . " " . $i * $tnh . " /tmp/fotoindex.$$.1.pnm > /tmp/fotoindex.$$.2.pnm");
+	    rename ("/tmp/fotoindex.$$.2.pnm", "/tmp/fotoindex.$$.1.pnm");
+	    unlink ("$pic.$$.pnm");
 	}
     }
-    system("$pnmcat -leftright " . join(" ", @row) . "> $i.pnm");
-    push (@col, "$i.pnm");
-    unlink (@row);
-
 }
-print HTML "</map>\n";
-print HTML "</body>\n";
-print HTML "</html>\n";
-if (!close (HTML)) {
-    print "$0: error closing map.html: $!\n";
-}
-system("$pnmcat -topbottom -jleft -white " . join(" ", @col) . "| $cjpeg -progressive > map.jpg");
+system("$cjpeg -progressive /tmp/fotoindex.$$.1.pnm $outputredirect");
+unlink ("/tmp/fotoindex.$$.1.pnm");

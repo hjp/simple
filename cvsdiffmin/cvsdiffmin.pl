@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!@@@perl@@@ -w
 #
-# $Id: cvsdiffmin,v 1.2 2000-02-08 16:58:28 hjp Exp $
+# $Id: cvsdiffmin.pl,v 1.1 2000-02-08 16:58:28 hjp Exp $
 #
 # cvsdiffmin - minimize output of cvs diff
 #
@@ -9,7 +9,7 @@ use strict;
 
 use File::Slurp;
 
-my $diff = "/usr/local/bin/diff";
+my $diff = "@@@diff_format@@@";
 
 my $state = 'EQ';
 my %text = ();

@@ -6,12 +6,15 @@ CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 all: configure ts
 
 clean:
-	rm ts
+	rm -f ts ts.o
 
 install: \
 	$(BINDIR)/ts \
 
-ts: ts.pl
+ts: %: %.o
+
+
+#	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 %: %.pl customize
 	sh ./customize < $< > $@

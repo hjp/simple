@@ -1,0 +1,19 @@
+#!/usr/local/bin/perl -w 
+use strict;
+use TimeSeries;
+use HTTP::Date qw(parse_date);
+
+my %hist = ();
+while (<>) {
+    my ($timestring, $rest) = m/(\w\w\w [ \d]\d \d\d:\d\d:\d\d) (.*)/;
+    my %p = /(\S+)=(\S+)/g;
+    my $bucket = $p{SRC} . " " . $p{DST};
+    if ($p{PROTO} eq "TCP" && $p{DPT} == 25 && ($p{SRC} =~ /^143.130\./)) {
+	$hist{$bucket}++;
+    } 
+}
+
+for (sort keys %hist) {
+    print "$_ $hist{$_}\n";
+}
+

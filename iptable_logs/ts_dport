@@ -1,0 +1,25 @@
+#!/usr/local/bin/perl -w 
+use strict;
+use TimeSeries;
+use HTTP::Date qw(parse_date);
+
+my %hist = ();
+my $dport = shift;
+while (<>) {
+    my ($timestring, $rest) = m/(\w\w\w [ \d]\d \d\d:\d\d:\d\d) (.*)/;
+    my ($year, $mon, $day, $hour, $min, $sec, $zone)  
+	    = parse_date($timestring);
+    my $bucket = sprintf "%04d-%02d-%02dT%02d:00\n", $year, $mon, $day, $hour;
+    my %p = /(\S+)=(\S+)/g;
+    if ($dport == $p{DPT}) {
+	$hist{$bucket}++;
+    } else {
+	$hist{$bucket} += 0;
+    }
+}
+my $ts = TimeSeries->new();
+$ts->legend("Connects to port $dport");
+for (sort keys %hist) {
+    $ts->add_timestring($_, $hist{$_});
+}
+print $ts->plot();

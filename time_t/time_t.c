@@ -4,7 +4,7 @@
 
 char *cmnd;
 
-void usage(void) {
+static void usage(void) {
     fprintf(stderr, "Usage: %s time_t ...\n", cmnd);
     exit(1);
 }

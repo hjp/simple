@@ -1,0 +1,68 @@
+#!/usr/bin/perl
+#  Direct-to-printer (old HP Jetdirect style printers) filter
+#  to integrate with rhs-printfilters.  
+#  Supplied by Joshua Buysse, University of Minnesota
+
+# needs perl 5.004 for IO:Socket
+require 5.004;
+
+# Maximum number of times to retry connection
+$max_retries = 3600; # at one second each, one hour.
+
+# needed for the dirname() function
+use File::Basename;
+use IO::Socket;
+
+$config_file = "script.cfg";
+
+open(CONFIG, $config_file) || die "No config file found!";
+
+while (<CONFIG>) {
+  chomp;
+  s/#.*//;     # no comments
+  s/^\s+//;    # no leading white
+  s/\s+$//;    # no trailing white
+
+  # If there's nothing left, we're done.
+  next unless length;
+
+  # split the fields
+  my ($key,$value) = split /\s*=\s*/, $_, 2;
+
+  $config{$key} = $value;
+}
+
+
+# the config hash should contain port and printer_ip as keys
+
+# if the port isn't set, use the default of 9100
+$config{'port'} = 9100 unless $config{'port'};
+$config{'printer_ip'} || die "Config file does not specify printer IP.";
+
+# now, open a socket to the printer.
+
+$retry_count = 0;
+
+do {
+  $socket = IO::Socket::INET->new(PeerAddr => $config{'printer_ip'},
+  				  PeerPort => $config{'port'},
+				  Proto    => "tcp",
+				  Type     => SOCK_STREAM);
+  if (! $socket) {
+    sleep 1;
+    $retry_count++;
+  }
+} until ($socket || ($retry_count > $max_retries));
+
+$socket || die "Unable to open socket after $retry_count retries.";
+
+while (<STDIN>) {
+  print $socket $_;
+}
+
+close($socket);
+
+
+
+
+

@@ -1,9 +1,12 @@
 char ieeefloat_c_rcs_id[] = 
-    "$Id: ieeefloat.c,v 1.1 1998-03-20 20:09:53 hjp Exp $";
+    "$Id: ieeefloat.c,v 1.2 2000-02-08 17:04:37 hjp Exp $";
 /* ieeefloat: print binary representations of IEEE 754 FP numbers.
  *
  * $Log: ieeefloat.c,v $
- * Revision 1.1  1998-03-20 20:09:53  hjp
+ * Revision 1.2  2000-02-08 17:04:37  hjp
+ * Added -f and -d options to force input to be float or double format.
+ *
+ * Revision 1.1  1998/03/20 20:09:53  hjp
  * Initial release:
  * prints arguments as strings, floats, and doubles decimal and binary.
  *
@@ -49,7 +52,7 @@ char *cmnd;
 
 
 static void usage(void) {
-    fprintf(stderr, "Usage: %s fp-number ...\n", cmnd);
+    fprintf(stderr, "Usage: %s [-f|-d] fp-number ...\n", cmnd);
     exit(1);
 }
 
@@ -152,12 +155,28 @@ static void sanitychecks(void) {
 
 int main(int argc, char**argv) {
     int i;
+    int convfloat = 0;
+    char *p;
 
     cmnd = argv[0];
     sanitychecks();
 
     for (i = 1; i < argc; i++) {
-	double d = strtod(argv[i], NULL);
+	double d;
+	if (strcmp(argv[i], "-f") == 0) {
+	    convfloat = 1;
+	    continue;
+	} else if (strcmp(argv[i], "-d") == 0) {
+	    convfloat = 0;
+	    continue;
+	} 
+
+	d = strtod(argv[i], &p);
+	if (p && *p) usage();
+
+	if (convfloat) {
+	    d = (float) d;
+	}
 	printf("%s\n", argv[i]);
 	printdouble(d);
 	printfloat(d);

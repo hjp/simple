@@ -40,7 +40,6 @@ while(<>) {
 	    } else {
 		die "unparsable date $date\n";
 	    }
-	    print "$date $time\n";
 
 	    my $ld;
 	    if ($opts{data} eq "b") {

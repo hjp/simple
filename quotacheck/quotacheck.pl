@@ -43,7 +43,7 @@ sub warnmsg {
 	    "andere Netzplatte verschieben.\n" .
 	    "\n" .
 	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
-	    "http://sww.wsr.ac.at/intranet/quotas/$user$mount_t.gif ansehen. \n" .
+	    "http://intra.wsr.ac.at/informationssysteme/quotas/$user$mount_t.gif ansehen. \n" .
 	    "Der Graph zeigten den verbrauchten Platz ('used') sowie die beiden\n" .
 	    "Quotas ('soft' und 'hard')\n" .
 	    "Die Softquota können Sie kurzfristig (bis zu einer Woche) überschreiten,\n" .
@@ -175,7 +175,7 @@ for my $ln (@df) {
 		if (system (@startgraph) != 0) {
 		    die "cannot execute @startgraph";
 		}
-		system("@@@scp@@@", "/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif", "sww.wsr.ac.at:/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif");
+		system("@@@scp@@@", "/usr/local/www//wsr/intranet/quotas/$user$mount_t.gif", "intra.wsr.ac.at:/usr/local/www/intra/informationssysteme/quotas/$user$mount_t.gif");
 
 		if (!-e $timestamp) {
 		    sendmail($user, $msg, $mount);	

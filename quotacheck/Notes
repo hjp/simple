@@ -1,0 +1,22 @@
+Change to use statemachine:
+
+    States:
+
+	ok
+	soft
+	soft-urgent
+	hard
+	ok-again
+
+	soft-urgent is soft, but expiry is < $n$ hours (48?) away.
+	All non-ok states revert to ok-again. ok-again turns into
+	ok after $n$ hours (168?).
+
+	Notifications are sent on all state transitions except
+	ok->ok-again and periodically in the states soft-urgent and
+	hard.
+
+	The message text reflects the different states.
+
+	The graph is updated in all states except ok.
+	

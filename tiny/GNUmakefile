@@ -3,13 +3,15 @@ include GNUmakevars
 CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
-all: configure dus fnp fnpa fnpc isodate psg save
+all: configure dus fnp fnpa fnpc isodate psg save crypt
 
 clean:
-	rm fnp fnpa fnpc customize
+	rm fnp fnpa fnpc customize crypt
 
 install: \
+	$(BINDIR)/crypt \
 	$(BINDIR)/dus \
+	$(BINDIR)/findsock \
 	$(BINDIR)/fnp \
 	$(BINDIR)/fnpa \
 	$(BINDIR)/fnpc \
@@ -17,13 +19,17 @@ install: \
 	$(BINDIR)/psg \
 	$(BINDIR)/save \
 	$(BINDIR)/savedate \
-	$(BINDIR)/findsock \
 
 fnp: fnp.sh
 fnpa: fnpa.sh
 fnpc: fnpc.sh
+crypt: crypt.pl
 
 %: %.sh customize
+	sh ./customize < $< > $@
+	chmod +x $@
+
+%: %.pl customize
 	sh ./customize < $< > $@
 	chmod +x $@
 
@@ -32,7 +38,9 @@ customize: configure
 
 ifeq ($(CONFDIR_exists),ok)
 
-configure: $(CONFDIR)/start $(CONFDIR)/find-printf $(CONFDIR)/finish
+configure: $(CONFDIR)/start \
+	$(CONFDIR)/find-printf $(CONFDIR)/perl \
+	$(CONFDIR)/finish
 	cat $^ > $@
 
 endif

@@ -1,0 +1,9 @@
+#!/bin/sh
+case `uname` in
+Linux)
+    ps auxww | grep "$1"
+    ;;
+HP-UX)
+    ps -ef | grep "$1"
+    ;;
+esac

@@ -2,6 +2,7 @@
 use strict;
 
 
+my @pp;
 for my $p (@ARGV) {
 
     my @p = split (/\//, $p);
@@ -9,6 +10,7 @@ for my $p (@ARGV) {
 	my $pp = join("/", @p[0..$i]);
 	$pp = "/" if $pp eq "";
 
-	system("/bin/ls", "-ldi", $pp);
+	push (@pp, $pp);
     }
 }
+system("/bin/ls", "-fldi", @pp);

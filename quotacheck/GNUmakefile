@@ -1,5 +1,9 @@
 include GNUmakevars
 
+CONFDIR=../../configure
+CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
+
+
 TARGETS = quotacheck quotastat quotasanitycheck quotagraph
 all: $(TARGETS)
 
@@ -30,5 +34,18 @@ $(SBINDIR):
 
 /usr/local/dfstat/%: %
 	$(INSTALL) -m 755 $^ $@
+
+ifeq ($(CONFDIR_exists),ok)
+
+configure: $(CONFDIR)/start \
+	$(CONFDIR)/perl \
+	$(CONFDIR)/df \
+	$(CONFDIR)/repquota \
+	$(CONFDIR)/sendmail \
+	$(CONFDIR)/scp \
+	$(CONFDIR)/finish
+	cat $^ > $@
+
+endif
 
 include GNUmakerules

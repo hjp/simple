@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-echo "#!/bin/sh" > customize
-echo "sed \\" > customize
-chmod +x customize
+echo "#!/bin/sh" > customize.$$
+echo "sed \\" > customize.$$
+chmod +x customize.$$
 
 ################################################################
 # find a working perl:
@@ -21,7 +21,7 @@ then
     echo could not find a working perl command, sorry.
     exit 1
 fi
-echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
+echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize.$$
 
 
 ################################################################
@@ -30,7 +30,7 @@ echo "  -e 's,@@@perl@@@,$perl,g' \\" >> customize
 for i in /bin/df /usr/bin/df /usr/bin/bdf /usr/sbin/df /usr/local/bin/df
 do
     a=`$i | awk 'NR == 1 {print $2}'`
-    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" -o "$a" = "1k-blocks" ]
+    if [ "$a" = "kbytes" -o "$a" = "1024-blocks" ]
     then
 	echo $i works
 	df="$i"
@@ -49,7 +49,7 @@ then
     echo could not find a working df command, sorry.
     exit 1
 fi
-echo "  -e 's,@@@df@@@,$df,g' \\" >> customize
+echo "  -e 's,@@@df@@@,$df,g' \\" >> customize.$$
 
 
 ################################################################
@@ -72,7 +72,7 @@ then
     echo could not find a working repquota command, sorry.
     exit 1
 fi
-echo "  -e 's,@@@repquota@@@,$repquota,g' \\" >> customize
+echo "  -e 's,@@@repquota@@@,$repquota,g' \\" >> customize.$$
 
 ################################################################
 # find sendmail:
@@ -101,11 +101,45 @@ then
     echo could not find a working sendmail command, sorry.
     exit 1
 fi
-echo "  -e 's,@@@sendmail@@@,$sendmail,g' \\" >> customize
-
-
+echo "  -e 's,@@@sendmail@@@,$sendmail,g' \\" >> customize.$$
 
 ################################################################
-# finish: 
-#	add a blank line to customize
-echo >> customize
+# $Id: configure,v 1.4 2004-11-30 09:27:01 hjp Exp $
+# find scp command
+#
+touch scp.test.$$
+for i in /usr/bin/scp /usr/local/bin/scp
+do
+
+    rm -f scp.test.$$.new
+    if $i scp.test.$$ scp.test.$$.new 
+    then
+	if [ -f scp.test.$$.new ]
+	then
+	    echo $i works
+	    scp="$i"
+	    break
+	fi
+    fi
+done
+rm -f scp.test.$$ scp.test.$$.new 
+if [ -z "$scp" ]
+then
+    echo could not find a working find command, sorry.
+    exit 1
+fi
+echo "  -e 's,@@@scp@@@,$scp,g' \\" >> customize.$$
+
+# $Log: configure,v $
+# Revision 1.4  2004-11-30 09:27:01  hjp
+# Add check for scp to configure. Added rules to makefile to automatically
+# rebuild configure.
+#
+################################################################
+# finish
+#	Add trailing newline and rename temp file to final name
+#
+echo  >> customize.$$
+
+mv customize.$$ customize
+

@@ -161,7 +161,7 @@ for my $ln (@df) {
 		if (system (@startgraph) != 0) {
 		    die "cannot execute @startgraph";
 		}
-		system("scp", "/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif", "sww.wsr.ac.at:/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif");
+		system("@@@scp@@@", "/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif", "sww.wsr.ac.at:/usr/local/www/wsr/intranet/quotas/$user$mount_t.gif");
 
 		if (!-e $timestamp) {
 		    sendmail($user, $msg, $mount);	

@@ -16,6 +16,7 @@ install: \
 	$(BINDIR)/isodate \
 	$(BINDIR)/psg \
 	$(BINDIR)/save \
+	$(BINDIR)/savedate \
 
 fnp: fnp.sh
 fnpa: fnpa.sh

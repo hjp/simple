@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
 
     cmnd = argv[0];
 
+    setlinebuf(stdout);
     while ((c = getopt(argc, argv, "u")) != EOF) {
 	switch (c) {
 	    case 'u':

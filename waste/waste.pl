@@ -35,7 +35,7 @@ sub waste {
 	$filename = $dir . "/" . $i;
 	($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
 	 $atime,$mtime,$ctime,$blksize,$blocks) =
-		stat($filename); 
+		lstat($filename); 
 
 	if (-d _) {
 	    ($size, $mtime, $atime) = waste($filename);

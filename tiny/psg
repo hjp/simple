@@ -4,6 +4,6 @@ Linux)
     ps auxwwf | grep "$1"
     ;;
 HP-UX)
-    ps -ef | grep "$1"
+    UNIX95=1 ps -efH | grep "$1"
     ;;
 esac

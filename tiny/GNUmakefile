@@ -1,7 +1,12 @@
-include GNUmakevars
+-include GNUmakevars
 
 CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
+
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
 
 all: configure dus fnp fnpa fnpc isodate psg save crypt
 
@@ -45,4 +50,4 @@ configure: $(CONFDIR)/start \
 
 endif
 
-include GNUmakerules
+-include GNUmakerules

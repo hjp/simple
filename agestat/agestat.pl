@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.4 2001-01-19 19:06:01 hjp Exp $
+# $Id: agestat.pl,v 1.5 2002-03-18 20:33:46 hjp Exp $
 #
 
 use strict;
@@ -33,8 +33,8 @@ sub wanted {
     my $age = $now - (
 	$opts{atime} ? $st->atime :
 	$opts{mtime} ? $st->mtime :
-		       ($st->atime > $st->mtime ? $st->atime
-		                                : $st->mtime ));
+		       (! -d && $st->atime > $st->mtime ? $st->atime
+		                                        : $st->mtime ));
     #print $File::Find::name, ": $age sec, ", $st->size, " bytes, ", $st->nlink, " links\n";
     my $log2age = log($age >= 1 ? $age : 1) / $log_2;
     $hist[$log2age] += $st->size / $st->nlink;
@@ -80,7 +80,10 @@ for (my $i = 0; $i <= $#hist; $i++) {
 }
 
 # $Log: agestat.pl,v $
-# Revision 1.4  2001-01-19 19:06:01  hjp
+# Revision 1.5  2002-03-18 20:33:46  hjp
+# Ignore atime for directories
+#
+# Revision 1.4  2001/01/19 19:06:01  hjp
 # Removed superfluous "total" line.
 # Fixed usage message.
 #

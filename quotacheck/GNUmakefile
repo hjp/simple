@@ -1,7 +1,7 @@
 include GNUmakevars
 BINDIR=/usr/local/sbin
 
-all: quotacheck quotastat
+all: quotacheck quotastat quotasanitycheck
 
 clean:
 	rm -f quotacheck *.bak
@@ -9,7 +9,7 @@ clean:
 distclean: clean
 	rm -f customize
 
-install: $(BINDIR) $(BINDIR)/quotacheck $(BINDIR)/quotastat
+install: $(BINDIR) $(BINDIR)/quotacheck $(BINDIR)/quotastat $(BINDIR)/quotasanitycheck
 
 %: %.pl customize
 	sh ./customize < $< > $@

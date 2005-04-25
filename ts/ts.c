@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 			    exit(1);
 			}
 		    }
-		    if ((fp = fopen(file, "w")) == NULL) {
+		    if ((fp = fopen(file, "a")) == NULL) {
 			fprintf(stderr, "%s: cannot open %s: %s\n", argv[0], file, strerror(errno));
 			exit(1);
 		    }

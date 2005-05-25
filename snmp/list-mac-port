@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: list-mac-port,v 1.1 2003-12-03 13:51:47 hjp Exp $
+# $Header: /usr/local/src/master/simple/snmp/list-mac-port,v 1.2 2005-05-25 10:55:36 hjp Exp $
 #
 # list mac/port mapping of a switch
 #
@@ -31,7 +31,10 @@ while(<W>) {
 
 
 # $Log: list-mac-port,v $
-# Revision 1.1  2003-12-03 13:51:47  hjp
+# Revision 1.2  2005-05-25 10:55:36  hjp
+# s/Id/Header/ to get full path.
+#
+# Revision 1.1  2003/12/03 13:51:47  hjp
 # Added list-mac-port.
 # bay-mac-port is obsolete, won't be installed any more.
 #

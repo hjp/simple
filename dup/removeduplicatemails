@@ -1,0 +1,52 @@
+#!/usr/bin/perl 
+use warnings;
+use strict;
+
+use File::Find;
+
+use MIME::Parser;
+my $parser = new MIME::Parser;
+$parser->output_to_core(1);
+$parser->tmp_to_core(1);
+
+my %files;
+my %messages;
+sub check_file {
+    unless (-f) {
+	return;
+    }
+    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+        $atime,$mtime,$ctime,$blksize,$blocks) = stat(_);
+    if ($files{"$dev.$ino"}) {
+	# we already looked at this file - skip
+	return;
+    }
+    my $entity = $parser->parse_open($_);
+    unless ($entity) {
+	print STDERR "$File::Find::name cannot be parsed: skipping\n";
+	return;
+    }
+    my $mid =  $entity->head->get('Message-Id');
+    unless ($mid) {
+	print STDERR "$File::Find::name contains no message id: skipping\n";
+	return;
+    }
+    if ($messages{$mid}) {
+	# duplicate!
+	print STDERR "$File::Find::name is a duplicate of ",
+		     $files{$messages{$mid}},
+		     "\n";
+	my $ft = $File::Find::name;
+	$ft =~ s|(.*/)(.*)|$1|;
+	$ft .= "removedups.$$." . rand;
+	link ($files{$messages{$mid}}, $ft) && rename ($ft, $File::Find::name) || do {
+	    print STDERR "\terror: $!\n";
+	};
+	return;
+    } 
+    $messages{$mid} = "$dev.$ino";
+    $files{"$dev.$ino"} = $File::Find::name;
+}
+
+find(\&check_file, @ARGV);
+

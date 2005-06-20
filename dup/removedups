@@ -1,0 +1,57 @@
+#!/usr/bin/perl 
+use warnings;
+use strict;
+
+use File::Find;
+use Digest::SHA1;
+use Data::Dumper;
+
+my %files;
+sub check_file {
+    unless (-f) {
+	return;
+    }
+    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+        $atime,$mtime,$ctime,$blksize,$blocks) = stat(_);
+    $files{$size}{i}{"$dev.$ino"}{n}{$File::Find::name} = 1;
+}
+
+print STDERR "sorting files by size\n";
+find(\&check_file, @ARGV);
+print STDERR "... done\n";
+
+for my $s (sort { $a <=> $b } keys %files) {
+    print STDERR "checking files of size $s\n";
+    if (scalar keys %{$files{$s}{i}} == 1) {
+	print STDERR "only one file of size $s: skipping\n";
+    } else {
+	for my $i (keys %{$files{$s}{i}}) {
+	    my $f = (keys %{$files{$s}{i}{$i}{n}})[0];
+	    if (open (F, "<", $f)) {
+		# print STDERR "\tcomputing checksum of $f\n";
+		my $sha1 = Digest::SHA1->new;
+		$sha1->addfile(*F);
+		my $d = $sha1->b64digest;
+		if ($files{$s}{d}{$d}) {
+		    print STDERR "\t\tduplicate found\n";
+		    my $fo = (keys %{$files{$s}{d}{$d}{n}})[0];
+		    for my $fd (keys %{$files{$s}{i}{$i}{n}}) {
+			print "\t\t\tlinking $fd to $fo\n";
+			my $ft = $fd;
+			$ft =~ s|(.*/)(.*)|$1|;
+			$ft .= "removedups.$$." . rand;
+			link ($fo, $ft) && rename ($ft, $fd) || do {
+			    print STDERR "\t\t\t\terror: $!\n";
+			}
+		    }
+		} else {
+		    $files{$s}{d}{$d} = $files{$s}{i}{$i};
+		}
+	    } else {
+		print STDERR "cannot open $f: $!: ignoring\n";
+	    }
+	    delete $files{$s}{i}{$i};
+	}
+	# print Dumper $files{$s};
+    }
+}

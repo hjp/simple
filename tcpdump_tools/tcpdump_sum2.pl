@@ -34,15 +34,15 @@ while (<>) {
 	    $sum{$con}->[$secs] += $3;
 		
 
-	} elsif ($rest =~ m/^. ack (\d+) win (\d+) \(DF\)/) {
+	} elsif ($rest =~ m/^. ack (\d+) win (\d+) .*\(DF\)/) {
 	    # tcp ack 
 	} else {
-	    #print stderr "unparseable2: $_";
+	    print stderr "unparseable2: $_";
 	}
 	    
 	    
     } else {
-	#print stderr "unparseable1: $_";
+	print stderr "unparseable1: $_";
     }
 }
 

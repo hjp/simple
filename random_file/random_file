@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+my $p = $ARGV[0] || "/";
+
+for (;;) {
+    opendir(D, $p);
+    my @f = grep {! /^\.\.?$/ } readdir(D);
+    close(D);
+    if (!@f) {
+	# empty or unreadable directory
+	print "$p\n";
+	exit(0);
+    } 
+    my $f = $f[rand($#f + 1)];
+    $p = "$p/$f";
+    if (! -d $p) {
+	print "$p\n";
+	exit(0);
+    } 
+}

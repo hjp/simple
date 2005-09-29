@@ -112,7 +112,7 @@ sub parseline($$) {
 
     } elsif  (/(\w+) \s+ -\+ \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+
-	 (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ ?(?:days|hours))
+	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 	 /x) {
 	print "file limit: $1: $5 > ($6 $7) $8\n";
 	$user = $1;

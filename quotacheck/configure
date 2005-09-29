@@ -102,7 +102,6 @@ fi
 echo "  -e 's,@@@sendmail@@@,$sendmail,g' \\" >> customize.$$
 
 ################################################################
-# $Id: configure,v 1.5 2005-03-29 10:03:14 hjp Exp $
 # find scp command
 #
 touch scp.test.$$
@@ -129,7 +128,10 @@ fi
 echo "  -e 's,@@@scp@@@,$scp,g' \\" >> customize.$$
 
 # $Log: configure,v $
-# Revision 1.5  2005-03-29 10:03:14  hjp
+# Revision 1.6  2005-09-29 10:54:52  hjp
+# No real change.
+#
+# Revision 1.5  2005/03/29 10:03:14  hjp
 # check for df changed - rebuilt.
 #
 # Revision 1.1  2005/01/07 16:01:34  hjp

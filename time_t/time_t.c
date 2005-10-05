@@ -7,7 +7,7 @@
 char *cmnd;
 
 static void usage(void) {
-    fprintf(stderr, "Usage: %s time_t ...\n", cmnd);
+    fprintf(stderr, "Usage: %s [-f format] time_t ...\n", cmnd);
     exit(1);
 }
 

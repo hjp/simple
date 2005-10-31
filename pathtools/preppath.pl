@@ -10,8 +10,8 @@ preppath [-c] directory...
 
 =head1 DESCRIPTION
 
-apppath prepends the directories given as arguments to the PATH,
-eliminates  any duplicates prints the new path on stdout. 
+preppath prepends the directories given as arguments to the PATH,
+eliminates  any duplicates and prints the new path on stdout. 
 
 =head1 OPTIONS
 

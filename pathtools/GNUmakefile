@@ -16,6 +16,7 @@ install: $(BINDIR) \
     $(BINDIR)/apppath \
     $(BINDIR)/preppath \
     $(BINDIR)/delpath \
+    $(MAN1DIR) \
     $(MAN1DIR)/apppath.1 \
     $(MAN1DIR)/preppath.1 \
     $(MAN1DIR)/delpath.1 \
@@ -35,7 +36,7 @@ install: $(BINDIR) \
 customize: configure
 	sh ./configure
 
-$(BINDIR):
+$(BINDIR) $(MAN1DIR):
 	mkdir -p $@
 
 ifeq ($(CONFDIR_exists),ok)

@@ -6,7 +6,7 @@ groupmatch - find best matching group for list of users
 
 =head1 SYNOPSIS
 
-groupmatch [--cut value] [--allmembers] [--debug] user ...
+groupmatch [--cut value] [--allmembers] [--debug] [--miss value] user ...
 
 =head1 DESCRIPTION
 

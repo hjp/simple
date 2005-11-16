@@ -3,7 +3,7 @@ include GNUmakevars
 CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
-all: configure grouplist groupmatch
+all: configure grouplist groupmatch groupcount
 
 clean:
 	rm grouplist groupmatch
@@ -11,6 +11,7 @@ clean:
 install: \
 	$(BINDIR)/grouplist \
 	$(BINDIR)/groupmatch \
+	$(BINDIR)/groupcount \
 
 
 %: %.pl customize

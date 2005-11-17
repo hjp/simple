@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Header: /usr/local/src/master/simple/snmp/list-mac-port,v 1.3 2005-11-17 14:57:43 hjp Exp $
+# $Header: /usr/local/src/master/simple/snmp/list-mac-port,v 1.4 2005-11-17 16:07:41 hjp Exp $
 #
 # list mac/port mapping of a switch
 #
@@ -20,7 +20,7 @@ my $switch =  $ARGV[0];
 #my $cmnd = "snmpwalk $switch public 17.4.3.1.2 |";
 
 # NET-SNMP version: 5.0.9
-my $cmnd = "snmpwalk -m ALL -v 1 -c public  -O n matrix-0-1 SNMPv2-SMI::mib-2.17.4.3.1.2 |";
+my $cmnd = "snmpwalk -m ALL -v 1 -c public  -O n $switch SNMPv2-SMI::mib-2.17.4.3.1.2 |";
 
 open (W, $cmnd)
     or die "cannot invoke snmpwalk: $!";
@@ -41,7 +41,10 @@ while(<W>) {
 
 
 # $Log: list-mac-port,v $
-# Revision 1.3  2005-11-17 14:57:43  hjp
+# Revision 1.4  2005-11-17 16:07:41  hjp
+# Ups. hardcoding the switch isn't that great.
+#
+# Revision 1.3  2005/11/17 14:57:43  hjp
 # Adapted for NET-SNMP version: 5.0.9
 #
 # Revision 1.2  2005/05/25 10:55:36  hjp

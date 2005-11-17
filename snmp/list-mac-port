@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Header: /usr/local/src/master/simple/snmp/list-mac-port,v 1.2 2005-05-25 10:55:36 hjp Exp $
+# $Header: /usr/local/src/master/simple/snmp/list-mac-port,v 1.3 2005-11-17 14:57:43 hjp Exp $
 #
 # list mac/port mapping of a switch
 #
@@ -16,22 +16,35 @@ if (@ARGV != 1) {usage();}
 
 my $switch =  $ARGV[0];
 
-open (W, "snmpwalk $switch public 17.4.3.1.2 |")
+# UCD-snmp version: 4.2.3
+#my $cmnd = "snmpwalk $switch public 17.4.3.1.2 |";
+
+# NET-SNMP version: 5.0.9
+my $cmnd = "snmpwalk -m ALL -v 1 -c public  -O n matrix-0-1 SNMPv2-SMI::mib-2.17.4.3.1.2 |";
+
+open (W, $cmnd)
     or die "cannot invoke snmpwalk: $!";
 
 while(<W>) {
+    chomp;
     my ($p, $port) = split / = /;
+    if ($port =~ /INTEGER: (\d+)/) {
+	$port = $1;
+    }
     my @p = split(/\./, $p);
     my $mac = join(":", map { sprintf("%02x", $_) } @p[-6 .. -1]);
 
     next if ($mac =~ /^00:e0:63:/);	# Ignore internal MAC addresses
 					# of Enterasys switches.
-    print "$switch\t$mac\t$port";
+    print "$switch\t$mac\t$port\n";
 }
 
 
 # $Log: list-mac-port,v $
-# Revision 1.2  2005-05-25 10:55:36  hjp
+# Revision 1.3  2005-11-17 14:57:43  hjp
+# Adapted for NET-SNMP version: 5.0.9
+#
+# Revision 1.2  2005/05/25 10:55:36  hjp
 # s/Id/Header/ to get full path.
 #
 # Revision 1.1  2003/12/03 13:51:47  hjp

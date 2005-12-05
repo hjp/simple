@@ -11,9 +11,9 @@ GetOptions(\%opts, "fs=s", "data=s", "user=s");
 my $lastdate = "";
 my @data = ();
 
-print STDERR "fs = ", $opts{"fs"}, "\n";
-print STDERR "user = ", $opts{"user"}, "\n";
-print STDERR "data = ", $opts{"data"}, "\n";
+#print STDERR "fs = ", $opts{"fs"}, "\n";
+#print STDERR "user = ", $opts{"user"}, "\n";
+#print STDERR "data = ", $opts{"data"}, "\n";
 
 sub usage {
     print STDERR "Usage: $0 --fs=<filesystem> --user=<username> --data=[bi]\n";
@@ -195,5 +195,4 @@ system("gs -sDEVICE=ppmraw -r150 -dBATCH -sOutputFile=- -q - < quotastat.ps |" .
        "pnmscale 0.5 |" .
        "pnmflip -cw |" .
        "pnmcrop |" .
-       "ppmquant 256 |" .
-       "ppmtogif >/usr/local/www/wsr/intranet/quotas/$opts{user}$fs.gif");
+       "pnmtopng >/usr/local/www/wsr/intranet/quotas/$opts{user}$fs.png");

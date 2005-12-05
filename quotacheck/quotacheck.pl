@@ -43,10 +43,10 @@ sub warnmsg {
 	    "andere Netzplatte verschieben.\n" .
 	    "\n" .
 	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
-	    "http://intra.wsr.ac.at/informationssysteme/quotas/$user$mount_t.gif ansehen. \n" .
+	    "http://intra.wsr.ac.at/informationssysteme/quotas/$user$mount_t.png ansehen. \n" .
 	    "Der Graph zeigten den verbrauchten Platz ('used') sowie die beiden\n" .
 	    "Quotas ('soft' und 'hard')\n" .
-	    "Die Softquota können Sie kurzfristig (bis zu einer Woche) überschreiten,\n" .
+	    "Die Softquota können Sie kurzfristig (noch $grace) überschreiten,\n" .
 	    "die Hardquota nicht.\n" .
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
@@ -157,25 +157,11 @@ for my $ln (@df) {
 	my $mount_t = $mount;
 	$mount_t =~ s|/|_|g;
 	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
-	my $hpuxtime = '(?:NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours))';
-	my $linuxtime = '(?:none|\d+\:\d+|\d+days)';
 	while (<REPQUOTA>) {
 	    next unless (/\b\d+\b/);	# ignore header lines
 	    my ($user, $msg) = parseline($mount, $_);
 	    if ($msg) {
-		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user$mount_t";
-
-		my @startgraph= 
-		    ("/usr/local/dfstat/quotagraph",
-			"--fs=$mount",
-			"--user=$user",
-			"--data=b",
-			glob("/usr/local/dfstat/quota.stat.????-??")
-		    );
-		if (system (@startgraph) != 0) {
-		    die "cannot execute @startgraph";
-		}
-		system("@@@scp@@@", "/usr/local/www//wsr/intranet/quotas/$user$mount_t.gif", "intra.wsr.ac.at:/usr/local/www/intra/informationssysteme/quotas/$user$mount_t.gif");
+		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user:$mount_t";
 
 		if (!-e $timestamp) {
 		    sendmail($user, $msg, $mount);	
@@ -186,14 +172,11 @@ for my $ln (@df) {
 		    
 		} else {
 		    my $comp = -A $timestamp;
-		    print STDERR "comp = $comp\n";
+		    #print STDERR "comp = $comp\n";
 		    if ($comp > 5) {
 			sendmail($user, $msg, $mount);
 		    }
 		}
-	    } else{
-	    	my @deletemsg = ("/usr/local/dfstat/quotacheck-timestamps/$user$mount_t");
-	    	unlink (@deletemsg);
 	    }
 	}
 	close (REPQUOTA);

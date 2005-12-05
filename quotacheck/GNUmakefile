@@ -4,7 +4,7 @@ CONFDIR=../../configure
 CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 
 
-TARGETS = quotacheck quotastat quotasanitycheck quotagraph
+TARGETS = quotacheck quotastat quotasanitycheck quotagraph do_cron
 all: $(TARGETS)
 
 clean:
@@ -17,7 +17,8 @@ install: $(SBINDIR) $(SBINDIR)/quotacheck $(SBINDIR)/quotastat \
 	$(SBINDIR)/dfree \
 	$(SBINDIR)/quotasanitycheck $(MAN8DIR)/quotasanitycheck.8 \
 	/usr/local/dfstat/ \
-	/usr/local/dfstat/quotagraph 
+	/usr/local/dfstat/quotagraph \
+	/usr/local/dfstat/do_cron \
 
 %: %.pl customize
 	sh ./customize < $< > $@

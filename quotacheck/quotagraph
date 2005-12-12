@@ -186,7 +186,7 @@ close (CTL);
 
 
 my $rc = system("gnuplot", "quotacheck.ctl");
-print "system returned $rc\n";
+#print "system returned $rc\n";
 
 my $fs = $opts{fs};
 $fs =~ s|/|_|g;
@@ -195,4 +195,4 @@ system("gs -sDEVICE=ppmraw -r150 -dBATCH -sOutputFile=- -q - < quotastat.ps |" .
        "pnmscale 0.5 |" .
        "pnmflip -cw |" .
        "pnmcrop |" .
-       "pnmtopng >/usr/local/www/wsr/intranet/quotas/$opts{user}$fs.png");
+       "pnmtopng");

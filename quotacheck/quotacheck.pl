@@ -15,6 +15,7 @@ sub warnmsg {
 	'/fc4700'    	 => 'K:',
 	'/usr/local/www' => 'W:',
     );
+    my $sunit = $unit eq "Files" ? "i" : "b";
 
     my $wo;
     if ($dosdrv{$mount}) {
@@ -43,7 +44,7 @@ sub warnmsg {
 	    "andere Netzplatte verschieben.\n" .
 	    "\n" .
 	    "Sie können sich Ihre Verbrauchsgraphen unter\n" .
-	    "http://intra.wsr.ac.at/informationssysteme/quotas/$user$mount_t.png ansehen. \n" .
+	    "http://intra.wsr.ac.at/informationssysteme/quotas/$user${mount_t}_$sunit.png ansehen. \n" .
 	    "Der Graph zeigten den verbrauchten Platz ('used') sowie die beiden\n" .
 	    "Quotas ('soft' und 'hard')\n" .
 	    "Die Softquota können Sie kurzfristig (noch $grace) überschreiten,\n" .
@@ -54,7 +55,23 @@ sub warnmsg {
 	    "Peter Holzer, hjp\@wsr.ac.at, Kl. 786\n" .
 	    "Gina Lanik, gina\@wsr.ac.at, Kl. 738\n" .
 	    "Michael Demelbauer, michael\@wsr.ac.at, Kl. 787\n";
-    return $msg;
+
+    my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user:$mount_t:$sunit";
+
+    if (!-e $timestamp) {
+	sendmail($user, $msg, $mount);	
+	open (PMSG, ">$timestamp")
+	    or die "cannot open $timestamp: $!";
+	print PMSG (@time);
+	close (PMSG);
+	
+    } else {
+	my $comp = -A $timestamp;
+	#print STDERR "comp = $comp\n";
+	if ($comp > 5) {
+	    sendmail($user, $msg, $mount);
+	}
+    }
 }
 
 my %opts;
@@ -96,13 +113,13 @@ sub parseline($$) {
     return undef unless (/\b\d+\b/);	# ignore header lines
     my $msg = "";
     my $user;
-    if (/(\w+) \s+ -- \s*
+    if (/(\S+) \s+ -- \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+
 	 (\d+)\s+(\d+)\s+(\d+)
 	 /x) {
 	$user = $1;
 	#print "ok: $1\n";
-    } elsif  (/(\w+) \s+ \+- \s*
+    } elsif  (/(\S+) \s+ \+- \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
 	 (\d+)\s+(\d+)\s+(\d+)
 	 /x) {
@@ -110,14 +127,14 @@ sub parseline($$) {
 	$user = $1;
 	$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
 
-    } elsif  (/(\w+) \s+ -\+ \s*
+    } elsif  (/(\S+) \s+ -\+ \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 	 /x) {
 	print "file limit: $1: $5 > ($6 $7) $8\n";
 	$user = $1;
 	$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
-    } elsif  (/(\w+) \s+ \+\+ \s*
+    } elsif  (/(\S+) \s+ \+\+ \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 	 /x) {
@@ -160,24 +177,6 @@ for my $ln (@df) {
 	while (<REPQUOTA>) {
 	    next unless (/\b\d+\b/);	# ignore header lines
 	    my ($user, $msg) = parseline($mount, $_);
-	    if ($msg) {
-		my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user:$mount_t";
-
-		if (!-e $timestamp) {
-		    sendmail($user, $msg, $mount);	
-		    open (PMSG, ">$timestamp")
-			or die "cannot open $timestamp: $!";
-		    print PMSG (@time);
-		    close (PMSG);
-		    
-		} else {
-		    my $comp = -A $timestamp;
-		    #print STDERR "comp = $comp\n";
-		    if ($comp > 5) {
-			sendmail($user, $msg, $mount);
-		    }
-		}
-	    }
 	}
 	close (REPQUOTA);
     }

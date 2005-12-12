@@ -34,7 +34,7 @@ for $ln (@df) {
 	    $msg = "";
 	    if (!/\b\d+\b/) {
 		#print "header: $_";
-	    } elsif  (/(\w+) \s+ [-+][-+] \s*
+	    } elsif  (/(\S+) \s+ [-+][-+] \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+(|$hpuxtime|$linuxtime)\s+
 	         (\d+)\s+(\d+)\s+(\d+)\s+(|$hpuxtime|$linuxtime)
 		 /x) {

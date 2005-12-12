@@ -1,8 +1,11 @@
 #!@@@perl@@@
 #
-# $Id: quotasanitycheck.pl,v 1.1 1998-09-17 08:32:57 hjp Exp $
+# $Id: quotasanitycheck.pl,v 1.2 2005-12-12 08:48:59 hjp Exp $
 # $Log: quotasanitycheck.pl,v $
-# Revision 1.1  1998-09-17 08:32:57  hjp
+# Revision 1.2  2005-12-12 08:48:59  hjp
+# Allow non-word characters in usernames (machine accounts end with $)
+#
+# Revision 1.1  1998/09/17 08:32:57  hjp
 # CVS cleanups:
 # 	Added quotasanitycheck.pl and removed quotasanitycheck.
 # 	Added quotasanitycheck
@@ -45,7 +48,7 @@ for $ln (@df) {
     if ($fs =~ m|^/dev/|) {
 	open REPQUOTA, "@@@repquota@@@ $mount 2>/dev/null |" or die "cannot call @@@repquota@@@: $!";
 	while (<REPQUOTA>) {
-	    if  (/(\w+) \s+ [-+][-+] \s*
+	    if  (/(\S+) \s+ [-+][-+] \s*
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours)|)\s+
 	         (\d+)\s+(\d+)\s+(\d+)\s+(NOT\sSTARTED|EXPIRED|\d+\.\d+\ (?:days|hours)|)
 		 /x) {

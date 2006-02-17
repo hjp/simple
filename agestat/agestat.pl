@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.6 2006-02-17 13:31:41 hjp Exp $
+# $Id: agestat.pl,v 1.7 2006-02-17 13:50:23 hjp Exp $
 #
 
 use strict;
@@ -26,8 +26,8 @@ if (!defined($opts{scale})) {
 }
 
 if ($opts{buckets} eq "log2") {
-    for (0 .. 31) {
-	$bucket_max[$_] = 2 << $_;
+    for (my ($b, $s) = (0, 1); $b < 32; $b++, $s *= 2) {
+	$bucket_max[$b] = $s;
     }
 } elsif ($opts{buckets} eq "cal") {
     @bucket_max = (
@@ -56,7 +56,7 @@ sub wanted {
 		       (! -d && $st->atime > $st->mtime ? $st->atime
 		                                        : $st->mtime ));
     my $b = 0;
-    while ($age > $bucket_max[$b]) { $b++ };
+    while ($b <= $#bucket_max && $age > $bucket_max[$b]) { $b++ };
     #print $File::Find::name, ": $age sec, ", $st->size, " bytes, ", $st->nlink, " links, bucket $b\n";
     $hist[$b] += $st->size / $st->nlink;
 }
@@ -65,15 +65,15 @@ sub time2str {
     my ($t) = (@_);
 
     if ($t < 60) {
-	return sprintf ("%5.1f s", $t);
+	return sprintf ("%6.1f s", $t);
     } elsif ($t < 3600) {
-	return sprintf ("%5.1f m", $t/60);
+	return sprintf ("%6.1f m", $t/60);
     } elsif ($t < 3600 * 24) {
-	return sprintf ("%5.1f h", $t/3600);
+	return sprintf ("%6.1f h", $t/3600);
     } elsif ($t < 3600 * 24 * 365.2422) {
-	return sprintf ("%5.1f d", $t/(3600*24));
+	return sprintf ("%6.1f d", $t/(3600*24));
     } else {
-	return sprintf ("%5.1f y", $t/(3600*24*365.2422));
+	return sprintf ("%6.1f y", $t/(3600*24*365.2422));
     }
 }
 
@@ -102,7 +102,11 @@ for (my $i = 0; $i <= $#hist; $i++) {
 }
 
 # $Log: agestat.pl,v $
-# Revision 1.6  2006-02-17 13:31:41  hjp
+# Revision 1.7  2006-02-17 13:50:23  hjp
+# Fixed error when oldest file was older than oldest bucket.
+# Realigned columns.
+#
+# Revision 1.6  2006/02/17 13:31:41  hjp
 # Added option --buckets.
 #
 # Revision 1.5  2002/03/18 20:33:46  hjp

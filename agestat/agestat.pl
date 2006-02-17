@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.5 2002-03-18 20:33:46 hjp Exp $
+# $Id: agestat.pl,v 1.6 2006-02-17 13:31:41 hjp Exp $
 #
 
 use strict;
@@ -9,10 +9,10 @@ use File::Find;
 use Getopt::Long;
 
 my $now = time();
-my $log_2 = log(2);
+my @bucket_max;
 
-my %opts = ();
-GetOptions(\%opts, "atime", "mtime", "scale=s");
+my %opts = (buckets => 'log2');
+GetOptions(\%opts, "atime", "mtime", "scale=s", "buckets=s");
 my $scale;
 if (!defined($opts{scale})) {
     $scale = 1;
@@ -25,6 +25,26 @@ if (!defined($opts{scale})) {
     exit 1;
 }
 
+if ($opts{buckets} eq "log2") {
+    for (0 .. 31) {
+	$bucket_max[$_] = 2 << $_;
+    }
+} elsif ($opts{buckets} eq "cal") {
+    @bucket_max = (
+	3600,
+	86400,
+	7 * 86400,
+	30 * 86400,
+	182 * 86400,
+	1 * 365.2422 * 86400,
+	2 * 365.2422 * 86400,
+	3 * 365.2422 * 86400,
+	4 * 365.2422 * 86400,
+	5 * 365.2422 * 86400,
+    );
+}
+
+
 my @hist;
 
 sub wanted {
@@ -35,15 +55,14 @@ sub wanted {
 	$opts{mtime} ? $st->mtime :
 		       (! -d && $st->atime > $st->mtime ? $st->atime
 		                                        : $st->mtime ));
-    #print $File::Find::name, ": $age sec, ", $st->size, " bytes, ", $st->nlink, " links\n";
-    my $log2age = log($age >= 1 ? $age : 1) / $log_2;
-    $hist[$log2age] += $st->size / $st->nlink;
+    my $b = 0;
+    while ($age > $bucket_max[$b]) { $b++ };
+    #print $File::Find::name, ": $age sec, ", $st->size, " bytes, ", $st->nlink, " links, bucket $b\n";
+    $hist[$b] += $st->size / $st->nlink;
 }
 
-sub logtime2str {
-    my ($lt) = (@_);
-
-    my $t = 1 << $lt;
+sub time2str {
+    my ($t) = (@_);
 
     if ($t < 60) {
 	return sprintf ("%5.1f s", $t);
@@ -57,6 +76,7 @@ sub logtime2str {
 	return sprintf ("%5.1f y", $t/(3600*24*365.2422));
     }
 }
+
 
 
 if (@ARGV == 0) { push (@ARGV, "."); }
@@ -75,12 +95,17 @@ my $c = 0;
 for (my $i = 0; $i <= $#hist; $i++) {
     my $h = ($hist[$i] || 0);
     $c += $h;
-    printf("%2d\t%s\t%12.0f\t%5.1f\t%12.0f\t%5.1f\n", $i,
-	   logtime2str($i), $h/$scale, $h * 100 / $sum, $c/$scale, $c * 100 / $sum);
+    printf("%2d\t%s\t%12.0f\t%5.1f\t%12.0f\t%5.1f\n",
+	   $i,
+	   $i <= $#bucket_max ? time2str($bucket_max[$i]) : "infinity",
+	   $h/$scale, $h * 100 / $sum, $c/$scale, $c * 100 / $sum);
 }
 
 # $Log: agestat.pl,v $
-# Revision 1.5  2002-03-18 20:33:46  hjp
+# Revision 1.6  2006-02-17 13:31:41  hjp
+# Added option --buckets.
+#
+# Revision 1.5  2002/03/18 20:33:46  hjp
 # Ignore atime for directories
 #
 # Revision 1.4  2001/01/19 19:06:01  hjp

@@ -131,11 +131,11 @@ if ($lasttime - $firsttime > 3 * 30 * 24 * 3600) {
 	    if ($toff > 12*3600) {
 		$toff = 24 * 3600 - $toff;
 	    }
-	    print "correcting time by $toff seconds ";
-	    printf "from %04d-%02d-%02d %02d:%02d:%02d ", $year+1900, $mon+1, $mday, $hour, $min, $sec;
+	    # print "correcting time by $toff seconds ";
+	    # printf "from %04d-%02d-%02d %02d:%02d:%02d ", $year+1900, $mon+1, $mday, $hour, $min, $sec;
 	    $time -= $toff;
 	    ($sec,$min,$hour,$mday,$mon,$year) = localtime($time);
-	    printf "to %04d-%02d-%02d %02d:%02d:%02d\n", $year+1900, $mon+1, $mday, $hour, $min, $sec;
+	    # printf "to %04d-%02d-%02d %02d:%02d:%02d\n", $year+1900, $mon+1, $mday, $hour, $min, $sec;
 	}
 	    
 
@@ -165,11 +165,11 @@ if ($lasttime - $firsttime > 3 * 30 * 24 * 3600) {
 	    if ($toff > 12*3600) {
 		$toff = 24 * 3600 - $toff;
 	    }
-	    print "correcting time by $toff seconds ";
-	    printf "from %04d-%02d-%02d %02d:%02d:%02d ", $year+1900, $mon+1, $mday, $hour, $min, $sec;
+	    # print "correcting time by $toff seconds ";
+	    # printf "from %04d-%02d-%02d %02d:%02d:%02d ", $year+1900, $mon+1, $mday, $hour, $min, $sec;
 	    $time -= $toff;
 	    ($sec,$min,$hour,$mday,$mon,$year) = localtime($time);
-	    printf "to %04d-%02d-%02d %02d:%02d:%02d\n", $year+1900, $mon+1, $mday, $hour, $min, $sec;
+	    # printf "to %04d-%02d-%02d %02d:%02d:%02d\n", $year+1900, $mon+1, $mday, $hour, $min, $sec;
 	}
 	    
 

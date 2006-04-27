@@ -10,9 +10,9 @@ my $hostname;
 sub warnmsg {
     my ($mount, $usage, $soft, $hard, $grace, $unit, $user) = @_;
     my %dosdrv = (
-	'/common'	 => 'H:',
+	'/shares/common' => 'H:',
 	'/wsrdb/users'	 => 'J:',
-	'/fc4700'    	 => 'K:',
+	'/shares/user'	 => 'K:',
 	'/usr/local/www' => 'W:',
     );
     my $sunit = $unit eq "Files" ? "i" : "b";

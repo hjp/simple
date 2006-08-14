@@ -3,6 +3,8 @@
 use strict;
 
 use Getopt::Std;
+use Digest::MD5 qw(md5_hex);
+
 my $time=time;
 my @time=localtime($time);
 my $hostname;
@@ -69,7 +71,15 @@ sub warnmsg {
 	my $comp = -A $timestamp;
 	#print STDERR "comp = $comp\n";
 	if ($comp > 5) {
-	    sendmail($user, $msg, $mount);
+	    my $msg1 = $msg;
+	    $msg1 =~ s/( noch \d)([.\d]*)( MB )/$1 . "x" x length($2) . $3/e;
+	    my $digest = md5_hex($msg1);
+	    unless (-f "/var/tmp/quotacheck/$digest") {
+		sendmail($user, $msg, $mount);
+		mkdir("/var/tmp/quotacheck");
+		my $f;
+		open ($f, ">", "/var/tmp/quotacheck/$digest") && print $f "x";
+	    }
 	}
     }
 }

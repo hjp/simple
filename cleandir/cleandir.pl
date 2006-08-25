@@ -6,7 +6,7 @@ cleandir - remove unused files from directory
 
 =head1 SYNOPSIS
 
-cleandir [-d days] [-n] [-m] [-v] [-s] directory...
+cleandir [-d days] [-n] [-m] [-v] [-s] [-i|-x regex] directory...
 
 =head1 DESCRIPTION
 
@@ -43,6 +43,13 @@ them to survive. This option exists to humour them.
 
 Verbose. Can be repeated to increase verbosity.
 
+=item B<-i>|B<-x> regex
+
+Include and exclude patterns. The filenames (not the complete path) of
+all files and directories to be removed are compared against these
+patterns in order. The first hit determines the action. These patterns
+can also be used to override the -s option and to cross mount points.
+
 =back
 
 =head1 AUTHOR
@@ -65,7 +72,7 @@ my $mtime_only = 0;
 
 
 sub cleandir {
-    my ($dir, $since, $level) = (@_);
+    my ($dir, $since, $level, $inex) = (@_);
     my $notremoved = 0;
 
     if ($verbose > 1) {
@@ -85,14 +92,24 @@ sub cleandir {
 	}
 	my $st = lstat("$i");
 
+	my $action = 'i';
 	# Skip anything on a different filesystem
 	if ($st->dev != $fs) {
-		$notremoved++;
-		next;
+		$action = 'x';
 	}
 
 	# Skip sockets and pipes
 	if ($skip_fifos && (-p _ || -S _)) {
+		$action = 'x';
+	}
+
+	for (@$inex) {
+	    if ($i =~ /$_->[0]/) {
+		$action = $_->[1];
+		last;
+	    }
+	}
+	if ($action eq 'x') {
 		$notremoved++;
 		next;
 	}
@@ -106,7 +123,7 @@ sub cleandir {
 		my $remaining = -1;
 		my $st1 = lstat(".");
 		if ($st->dev == $st1->dev && $st->ino == $st1->ino) {
-		    $remaining = cleandir("$dir/$i", $since, $level+1);
+		    $remaining = cleandir("$dir/$i", $since, $level+1, $inex);
 		} else {
 		    print STDERR "$0:", " " x $level,
 		    		 " $dir/$i changed dev/inode from ",
@@ -158,8 +175,8 @@ sub cleandir {
 
 sub main {
     my $since = time() - 14 * 86400;;
-    my $i;
     my $help;
+    my @inex;
 
     GetOptions('help|?' => \$help,
                'days|d=f' => sub { $since = time() - $_[1] * 86400; },
@@ -167,15 +184,17 @@ sub main {
 	       'nop|n' => \$nop,
 	       'skip-fifos|s' => \$skip_fifos,
 	       'mtime-only|m' => \$mtime_only,
+	       'include|i=s' => sub { push @inex, [ $_[1], 'i' ] },
+	       'exclude|x=s' => sub { push @inex, [ $_[1], 'x' ] },
 	      ) or pod2usage(2);
     pod2usage(1) if $help;
     pod2usage(2) unless (@ARGV);
     
 
-    while ($i = shift(@ARGV)) {
+    while (my $i = shift(@ARGV)) {
 	my $cwd = getcwd();
 	if (chdir($i)) {
-	    cleandir($i, $since, 0);
+	    cleandir($i, $since, 0, \@inex);
 	    chdir($cwd);
 	}
     }
@@ -185,7 +204,10 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
-# Revision 1.8  2005-04-04 16:05:40  hjp
+# Revision 1.9  2006-08-25 09:57:10  hjp
+# Added --include (-i) and --exclude (-x) options.
+#
+# Revision 1.8  2005/04/04 16:05:40  hjp
 # Print whole directory at rmdir with verbose output.
 #
 # Revision 1.7  2004/11/02 09:01:12  hjp

@@ -133,7 +133,7 @@ sub parseline($$) {
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
 	 (\d+)\s+(\d+)\s+(\d+)
 	 /x) {
-	print "block limit: $1: $2 > ($3 $4) $5\n";
+	#print "block limit: $1: $2 > ($3 $4) $5\n";
 	$user = $1;
 	$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
 
@@ -141,17 +141,17 @@ sub parseline($$) {
 	 (\d+)\s+(\d+)\s+(\d+)\s+
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 	 /x) {
-	print "file limit: $1: $5 > ($6 $7) $8\n";
+	#print "file limit: $1: $5 > ($6 $7) $8\n";
 	$user = $1;
 	$msg = warnmsg($mount, $5, $6, $7, $8, "Files", $user);
     } elsif  (/(\S+) \s+ \+\+ \s*
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)\s+
 	 (\d+)\s+(\d+)\s+(\d+)\s+($hpuxtime|$linuxtime)
 	 /x) {
-	print "block limit: $1: $2 > ($3 $4) $5\n";
+	#print "block limit: $1: $2 > ($3 $4) $5\n";
 	$user = $1;
 	$msg = warnmsg($mount, $2/1024, $3/1024, $4/1024, $5, "MB", $user);
-	print "file limit: $1: $6 > ($7 $8) $9\n";
+	#print "file limit: $1: $6 > ($7 $8) $9\n";
 	$msg .= "\n\n" . warnmsg($mount, $6, $7, $8, $9, "Files", $user);
     } else {
 	print "$mount: $.: unparseable: $_";

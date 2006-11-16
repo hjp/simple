@@ -54,8 +54,8 @@ sub warnmsg {
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
 	    "Systemadministratoren unterstützen:\n" .
-	    "Peter Holzer, hjp\@wsr.ac.at, Kl. 786\n" .
 	    "Gina Lanik, gina\@wsr.ac.at, Kl. 738\n" .
+	    "Peter Holzer, hjp\@wsr.ac.at, Kl. 786\n" .
 	    "Michael Demelbauer, michael\@wsr.ac.at, Kl. 787\n";
 
     my $timestamp = "/usr/local/dfstat/quotacheck-timestamps/$user:$mount_t:$sunit";
@@ -73,6 +73,7 @@ sub warnmsg {
 	if ($comp > 5) {
 	    my $msg1 = $msg;
 	    $msg1 =~ s/( noch \d)([.\d]*)( MB )/$1 . "x" x length($2) . $3/e;
+	    $msg1 =~ s/(kurzfristig \(noch )([2-9])\d:\d\d\)/$1${2}0:00) /;
 	    my $digest = md5_hex($msg1);
 	    unless (-f "/var/tmp/quotacheck/$digest") {
 		sendmail($user, $msg, $mount);

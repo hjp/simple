@@ -6,7 +6,7 @@ preppath - prepend directories to path
 
 =head1 SYNOPSIS
 
-preppath [-c] directory...
+preppath [-c] [-v variable] directory...
 
 =head1 DESCRIPTION
 
@@ -22,6 +22,12 @@ eliminates  any duplicates and prints the new path on stdout.
 Check whether the directories exist before adding them. Nonexistent
 directories are silently ignored.
 
+=item B<-v> I<variable>
+
+Use the environment variable I<variable> instead of PATH.
+This is useful for manipulating other PATH-like variables, like
+LD_LIBRARY_PATH, PERL5LIB, etc.
+
 =back
 
 =head1 AUTHOR
@@ -31,14 +37,19 @@ Peter J. Holzer <hjp@hjp.at>.
 =cut
 
 use strict;
-my $path = $ENV{PATH};
-my @path = split(/:/, $path);
-my $check;
+use Getopt::Long;
+use Pod::Usage;
 
-if ($ARGV[0] eq '-c') {
-    $check = 1;
-    shift;
-}
+my $check;
+my $debug;
+my $var = 'PATH';
+GetOptions("check" => \$check,
+           "debug" => \$debug,
+           "var=s" => \$var,
+          ) or pod2usage(2);
+
+my $path = $ENV{$var} || '';
+my @path = split(/:/, $path);
 
 if ($#ARGV == 0 && $ARGV[0] =~ /:/) {
     @ARGV = split(/:/, $ARGV[0]);

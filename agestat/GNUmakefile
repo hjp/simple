@@ -23,4 +23,10 @@ customize: configure
 $(BINDIR):
 	mkdir -p $@
 
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
+
 include GNUmakerules

@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.7 2006-02-17 13:50:23 hjp Exp $
+# $Id: agestat.pl,v 1.8 2007-02-09 15:36:37 hjp Exp $
 #
 
 use strict;
@@ -8,11 +8,16 @@ use File::stat;
 use File::Find;
 use Getopt::Long;
 
+sub usage {
+    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|M)]\n";
+    exit 1;
+}
+
 my $now = time();
 my @bucket_max;
 
 my %opts = (buckets => 'log2');
-GetOptions(\%opts, "atime", "mtime", "scale=s", "buckets=s");
+GetOptions(\%opts, "atime", "mtime", "scale=s", "buckets=s") or usage();
 my $scale;
 if (!defined($opts{scale})) {
     $scale = 1;
@@ -21,8 +26,7 @@ if (!defined($opts{scale})) {
 } elsif ($opts{scale} eq 'M') {
     $scale = 1024*1024;
 } else {
-    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|M)]\n";
-    exit 1;
+    usage();
 }
 
 if ($opts{buckets} eq "log2") {
@@ -102,7 +106,11 @@ for (my $i = 0; $i <= $#hist; $i++) {
 }
 
 # $Log: agestat.pl,v $
-# Revision 1.7  2006-02-17 13:50:23  hjp
+# Revision 1.8  2007-02-09 15:36:37  hjp
+# Automatically create GNUmakerules and GNUmakevars if they don't exist.
+# Print usage if unknown option is given.
+#
+# Revision 1.7  2006/02/17 13:50:23  hjp
 # Fixed error when oldest file was older than oldest bucket.
 # Realigned columns.
 #

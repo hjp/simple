@@ -1,12 +1,15 @@
 char scat_c_cvs_version[] = 
-    "$Id: scat.c,v 1.3 2000-02-10 00:17:35 hjp Exp $";
+    "$Id: scat.c,v 1.4 2007-02-27 08:43:02 hjp Exp $";
 /* scat - safe cat
  *
  * catenate input files and print to standard output.
  * replace all non-printable characters with C \xXX escapes.
  *
  * $Log: scat.c,v $
- * Revision 1.3  2000-02-10 00:17:35  hjp
+ * Revision 1.4  2007-02-27 08:43:02  hjp
+ * CR is not a safe character.
+ *
+ * Revision 1.3  2000/02/10 00:17:35  hjp
  * Shut up gcc
  *
  * Revision 1.2  1999/08/01 18:09:09  hjp
@@ -53,7 +56,7 @@ static void do_safecat(const char *filename) {
 	}
     }
     while ((c = getc(fp)) != EOF) {
-	if (isprint(c) || isspace(c)) {
+	if (isprint(c) || (isspace(c) && c != '\r')) {
 	    if (putchar(c) == EOF) {
 		fprintf(stderr,
 			catgets(catalog, MSG_Set, MSG_WRITE, 

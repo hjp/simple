@@ -1,5 +1,4 @@
 include GNUmakevars
-include GNUmakerules
 
 all: scat $(patsubst %.msg, %.cat, $(wildcard *.msg))
 
@@ -15,3 +14,10 @@ clean:
 	rm -f *.cat *.o scat core scat.h
 
 install: $(BINDIR)/scat
+
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
+include GNUmakerules

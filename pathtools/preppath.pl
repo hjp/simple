@@ -38,7 +38,6 @@ Peter J. Holzer <hjp@hjp.at>.
 
 use strict;
 use Getopt::Long;
-use Pod::Usage;
 
 my $check;
 my $debug;
@@ -46,7 +45,11 @@ my $var = 'PATH';
 GetOptions("check" => \$check,
            "debug" => \$debug,
            "var=s" => \$var,
-          ) or pod2usage(2);
+          ) or do {
+                require Pod::Usage;
+                import Pod::Usage;
+                pod2usage(2);
+            };
 
 my $path = $ENV{$var} || '';
 my @path = split(/:/, $path);

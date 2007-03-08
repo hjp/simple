@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
 int main(void) {
         size_t s = 0x100000;
 	size_t sum = 0;

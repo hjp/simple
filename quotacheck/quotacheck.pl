@@ -54,7 +54,7 @@ sub warnmsg {
 	    "\n" .
 	    "Lassen Sie sich bei Gelegenheit auch von einem der zuständigen\n" .
 	    "Systemadministratoren unterstützen:\n" .
-	    "Gina Lanik, gina\@wsr.ac.at, Kl. 738\n" .
+	    "Gina Feichtinger, gina\@wsr.ac.at, Kl. 738\n" .
 	    "Peter Holzer, hjp\@wsr.ac.at, Kl. 786\n" .
 	    "Michael Demelbauer, michael\@wsr.ac.at, Kl. 787\n";
 

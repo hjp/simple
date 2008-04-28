@@ -2,22 +2,69 @@
 use warnings;
 use strict;
 
-# Idea for improvement: 
-# take maximum of serial from file and from all authoritative nameservers,
-# then increment by one.
+use Getopt::Long;
+use Net::DNS::Resolver;
+
+my $cfg;
+GetOptions('config:s' => \$cfg);
+
+my %file2zone;
+my $res;
+
+if ($cfg) {
+    # XXX - this is very simplistic
+    open(my $fh, '<', $cfg) or die "cannot open $cfg: $!";
+    my $currentzone;
+    while (<$fh>) {
+	if (/zone "(.*?)"/) {
+	    $currentzone = $1;
+	} elsif (m{file ".*/(.*)"}) {
+	    $file2zone{$1} = $currentzone;
+	}
+    }
+    $res = Net::DNS::Resolver->new();
+}
 
 for my $f (@ARGV) {
-    rename $f, "$f.old" || die "cannot rename $f to $f.old: $!";
-    open (my $in, '<', "$f.old") or die "cannot open $f.old: $!";
-    open (my $out, '>', "$f") or die "cannot open $f: $!";
+    my $maxserial = 0;
+    if (my $zone = $file2zone{$f}) {
+	my $reply = $res->send($zone, 'NS');
+	my @nsnames;
+	for my $ans ($reply->answer) {
+	    push @nsnames, $ans->nsdname;
+	}
+	my @nsips;
+	for (@nsnames) {
+	    my $reply = $res->send($_, 'A');
+	    for my $ans ($reply->answer) {
+		push @nsips, $ans->address if $ans->type eq 'A';
+	    }
+	}
+	for (@nsips) {
+	    $res->nameservers($_);
+	    my $reply = $res->send($zone, 'SOA');
+	    for my $ans ($reply->answer) {
+		if ($ans->type eq 'SOA') {
+		    # XXX assume no wraparound
+		    if ($ans->serial > $maxserial) {
+			$maxserial = $ans->serial;
+		    }
+		}
+	    }
+	}
+    }
+    open (my $in, '<', "$f") or die "cannot open $f: $!";
+    open (my $out, '>', "$f.new") or die "cannot open $f.new: $!";
     while (<$in>) {
 	if (/(.*\bSOA\b.*?)(\d+)( \d+ \d+ \d+ \d+)/) {
 	    my $serial = $2;
-	    $serial++;
-	    print $out "$1$serial$3\n";
+	    $maxserial = $serial if ($serial > $maxserial);
+	    $maxserial++;
+	    print $out "$1$maxserial$3\n";
 	} else {
 	    print $out $_;
 	}
     }
-    close($out) or die "cannot close $out";
+    close($out) or die "cannot close $f.new: $!";
+    # rename "$f.new", $f || die "cannot rename $f.new to $f: $!";
 }

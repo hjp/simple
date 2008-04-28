@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+use strict;
+use Net::DNS;
+
+sub usage {
+    print STDERR "Usage: $0 domainname type nameserver\n" unless (@ARGV == 2);
+    exit(1);
+}
+
+usage() unless (@ARGV == 3);
+
+my $res = new Net::DNS::Resolver;
+$res->nameservers($ARGV[2]);
+my $answer = $res->query($ARGV[0], $ARGV[1]);
+if ($answer) {
+    $answer->print;
+} else {
+    print STDERR "query failed: ", $res->errorstring, "\n";
+}

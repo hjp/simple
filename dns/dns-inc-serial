@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+# Idea for improvement: 
+# take maximum of serial from file and from all authoritative nameservers,
+# then increment by one.
+
+for my $f (@ARGV) {
+    rename $f, "$f.old" || die "cannot rename $f to $f.old: $!";
+    open (my $in, '<', "$f.old") or die "cannot open $f.old: $!";
+    open (my $out, '>', "$f") or die "cannot open $f: $!";
+    while (<$in>) {
+	if (/(.*\bSOA\b.*?)(\d+)( \d+ \d+ \d+ \d+)/) {
+	    my $serial = $2;
+	    $serial++;
+	    print $out "$1$serial$3\n";
+	} else {
+	    print $out $_;
+	}
+    }
+    close($out) or die "cannot close $out";
+}

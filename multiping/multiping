@@ -1,0 +1,31 @@
+#!/usr/bin/perl 
+use warnings;
+use strict;
+
+use IO::Select;
+
+my $s = IO::Select->new();
+
+my %fh2host;
+my $len = 0;
+for my $host (@ARGV) {
+    open(my $fh, '-|', 'ping', $host) or die "cannot exec ping: $!";
+    $s->add($fh);
+    $fh2host{$fh} = $host;
+    $len = length($host) if length($host) > $len;
+}
+my %state;
+
+for (;;) {
+    my @ready = $s->can_read(1);
+    for my $fh (@ready) {
+	my $msg = <$fh>;
+	chomp($msg);
+	my $host = $fh2host{$fh};
+	$state{$host} = $msg;
+    }
+    print "\n\n";
+    for my $host (@ARGV) {
+	printf("%-*s : %s\n", $len, $host, $state{$host});
+    }
+}

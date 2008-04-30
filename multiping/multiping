@@ -26,6 +26,7 @@ for (;;) {
     }
     print "\n\n";
     for my $host (@ARGV) {
+	no warnings 'uninitialized';
 	printf("%-*s : %s\n", $len, $host, $state{$host});
     }
 }

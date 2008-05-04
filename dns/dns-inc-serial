@@ -66,5 +66,5 @@ for my $f (@ARGV) {
 	}
     }
     close($out) or die "cannot close $f.new: $!";
-    # rename "$f.new", $f || die "cannot rename $f.new to $f: $!";
+    rename "$f.new", $f || die "cannot rename $f.new to $f: $!";
 }

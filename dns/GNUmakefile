@@ -7,6 +7,7 @@ install: \
 	$(BINDIR)/gethostbyname \
 	$(BINDIR)/minnet \
 	$(BINDIR)/query \
+	$(BINDIR)/dns-inc-serial \
 
 
 clean:

@@ -266,6 +266,20 @@ sub rr2key {
 	$key = $rr->nsdname;
     } elsif ($rr->type eq 'MX') {
 	$key = join(' ', $rr->preference, $rr->exchange);
+    } elsif ($rr->type eq 'CNAME') {
+	$key = $rr->cname;
+    } elsif ($rr->type eq 'TXT') {
+	$key = $rr->txtdata;
+    } elsif ($rr->type eq 'SRV') {
+	$key = join(' ', $rr->priority, $rr->weight, $rr->port, $rr->target);
+    } elsif ($rr->type eq 'PTR') {
+	$key = $rr->ptrdname;
+    } elsif ($rr->type eq 'HINFO') {
+	$key = join(' ', $rr->cpu, $rr->os);
+    } elsif ($rr->type eq 'LOC') {
+	# sloppy
+	my ($lat, $lon) = $rr->latlon;
+	$key = join(' ', $lat, $lon, $rr->altitude);
     } else {
 	print STDERR "unhandled RR:\n";
 	print STDERR $rr->string, "\n";

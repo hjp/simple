@@ -31,4 +31,10 @@ configure: $(CONFDIR)/start $(CONFDIR)/perl $(CONFDIR)/finish
 
 endif
 
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
+
 include GNUmakerules

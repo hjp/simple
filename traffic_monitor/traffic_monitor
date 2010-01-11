@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+# very simple traffic monitor using /proc/net/dev
+
+use warnings;
+use strict;
+
+use Time::HiRes qw(time);
+
+# Inter-|   Receive                                                |  Transmit
+#  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+#   eth0:2986064583 116306335    0    0    0     0          0    102845   238806441 38719482    0    0    0     0       0          0
+
+my %last;
+my %hist;
+for (;;) {
+    my $t = time;
+    open(my $fh, '<', '/proc/net/dev') or die "cannot open /proc/net/dev: $!";
+    my $dt = $t - $last{t};
+    while (<$fh>) {
+        if (my ($dev,
+                $inb,  $inp,  $ine,  $ind,  $infi,  $infr,   $incmp,  $inmulti,
+                $outb, $outp, $oute, $outd, $outfi, $outcol, $outcar, $outcmp
+               )
+            = m/\s*(\w+):(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/) {
+            my $dinb  = $inb - $last{$dev}{inb};
+            my $doutb = $outb - $last{$dev}{outb};
+            printf "%8s: ", $dev;
+            for my $period (60, 600, 3600) {
+                push @{ $hist{$dev}{$period} }, [$last{t}, $t, $dinb, $doutb];
+                if ($hist{$dev}{$period}[0][0] < $t - $period) {
+                    shift @{ $hist{$dev}{$period} };
+                }
+                my $sinb;
+                my $soutb;
+                for (@{ $hist{$dev}{$period} }) {
+                    $sinb += $_->[2];
+                    $soutb += $_->[3];
+                }
+                if (@{ $hist{$dev}{$period} }) {
+                    printf "%8.0f ", $sinb / ($hist{$dev}{$period}[-1][1] - $hist{$dev}{$period}[0][0]);
+                    printf "%8.0f ", $soutb / ($hist{$dev}{$period}[-1][1] - $hist{$dev}{$period}[0][0]);
+                    print " | ";
+                }
+            }
+            print "\n";
+            $last{$dev}{inb}  = $inb;
+            $last{$dev}{outb} = $outb;
+        }
+    }
+    $last{t} = $t;
+    sleep(5);
+}

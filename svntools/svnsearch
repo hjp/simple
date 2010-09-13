@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+my $pattern = shift;
+
+push @ARGV, "." unless (@ARGV);
+
+for my $target (@ARGV) {
+    open(my $svnlog_fh, '-|', 'svn', 'log', $target) or die "cannot invoke svn log $target: $!";
+    my $atstart;
+    while (<$svnlog_fh>) {
+        if (/^------------------------------------------------------------------------$/) {
+            $atstart = 1;
+            next;
+        }
+        if ($atstart && /^r(\d+) \| /) {
+            my $revline = $_;
+            chomp $revline;
+            my $revision = $1;
+            open(my $svndiff_fh, '-|', 'svn', 'diff', "-c$revision", $target) or die "cannot invoke svn diff -c$revision $target: $!";
+            local $/ = undef;
+            my $diff = <$svndiff_fh>;
+            if ($diff =~ m/$pattern/) {
+                print "\n=== $revline ===\n$diff\n======\n\n";
+            }
+        }
+        $atstart = 0;
+    }
+}
+
+# vim: tw=0

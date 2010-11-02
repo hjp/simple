@@ -70,7 +70,7 @@ sub warnmsg {
     } else {
 	my $comp = -A $timestamp;
 	#print STDERR "comp = $comp\n";
-	if ($comp > 5) {
+	if ($comp > 3) {
 	    my $msg1 = $msg;
 	    $msg1 =~ s/( noch \d)([.\d]*)( MB )/$1 . "x" x length($2) . $3/e;
 	    $msg1 =~ s/(kurzfristig \(noch )([2-9])\d:\d\d\)/$1${2}0:00) /;

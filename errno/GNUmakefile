@@ -1,5 +1,8 @@
-# $Id: GNUmakefile,v 1.4 2008-04-05 10:04:53 hjp Exp $
+# $Id: GNUmakefile,v 1.5 2011-01-30 19:32:33 hjp Exp $
 # $Log: GNUmakefile,v $
+# Revision 1.5  2011-01-30 19:32:33  hjp
+# create GNUmakerules and GNUmakevars
+#
 # Revision 1.4  2008-04-05 10:04:53  hjp
 # added GNUmake*.sh
 #
@@ -28,4 +31,10 @@ GNUmakerules: GNUmakerules.sh
 
 install: $(BINDIR)/errno
 
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
 include GNUmakerules
+-include *.d

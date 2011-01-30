@@ -1,5 +1,8 @@
-# $Id: GNUmakefile,v 1.5 2011-01-30 19:32:33 hjp Exp $
+# $Id: GNUmakefile,v 1.6 2011-01-30 19:33:28 hjp Exp $
 # $Log: GNUmakefile,v $
+# Revision 1.6  2011-01-30 19:33:28  hjp
+# removed duplicate rules
+#
 # Revision 1.5  2011-01-30 19:32:33  hjp
 # create GNUmakerules and GNUmakevars
 #
@@ -23,11 +26,6 @@ errno_list.c: errno.list make_errno_list
 
 clean:
 	rm errno
-
-GNUmakevars: GNUmakevars.sh
-	sh ./$^ > $@
-GNUmakerules: GNUmakerules.sh
-	sh ./$^ > $@
 
 install: $(BINDIR)/errno
 

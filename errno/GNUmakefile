@@ -1,5 +1,9 @@
-# $Id: GNUmakefile,v 1.6 2011-01-30 19:33:28 hjp Exp $
+# $Id: GNUmakefile,v 1.7 2011-01-30 19:41:15 hjp Exp $
 # $Log: GNUmakefile,v $
+# Revision 1.7  2011-01-30 19:41:15  hjp
+# Replaced GNUmakerules.sh with GNUmakerules.pl because Debian now uses a
+# /bin/sh which doesn't understand echo -e.
+#
 # Revision 1.6  2011-01-30 19:33:28  hjp
 # removed duplicate rules
 #
@@ -31,8 +35,8 @@ install: $(BINDIR)/errno
 
 GNUmakevars: GNUmakevars.sh
 	sh ./$^ > $@
-GNUmakerules: GNUmakerules.sh
-	sh ./$^ > $@
+GNUmakerules: GNUmakerules.pl
+	perl ./$^ > $@
 
 include GNUmakerules
 -include *.d

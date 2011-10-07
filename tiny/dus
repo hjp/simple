@@ -1,2 +1,0 @@
-#!/bin/sh
-du -k -x "$@" | sort -n | tail -100

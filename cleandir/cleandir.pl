@@ -29,6 +29,10 @@ The default is 14.
 
 Consider only the last modification time of the file, not the last access time.
 
+=item B<-c>
+
+Consider only the inode change time of the file.
+
 =item B<-n>
 
 No-op. Don't delete any files.
@@ -64,11 +68,13 @@ use File::stat;
 use POSIX;
 use Getopt::Long;
 use Pod::Usage;
+use List::Util qw(max);
 
 my $verbose = 0;
 my $nop = 0;
 my $skip_fifos = 0;
 my $mtime_only = 0;
+my $ctime_only = 0;
 
 
 sub cleandir {
@@ -115,7 +121,7 @@ sub cleandir {
 	}
 
 	if ($verbose > 3) {
-	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, "\n";
+	    print STDERR "$0:", " " x $level, " mtime=", $st->mtime, " atime=", $st->atime, " ctime=", $st->ctime, "\n";
 	}
 	if (-d _) {
 	    my $cwd = getcwd();
@@ -143,7 +149,8 @@ sub cleandir {
 				 "\n";
 		    return ++$notremoved;
 		}
-		if ($remaining == 0 && $st->mtime < $since) {
+		my $rtime = $ctime_only ? $st->ctime : $st->mtime;
+		if ($remaining == 0 && $rtime < $since) {
 		    if ($verbose > 0) {
 			print STDERR "$0:", " " x $level, "rmdir $dir/$i\n";
 		    }
@@ -156,15 +163,20 @@ sub cleandir {
 		print STDERR "$0:", " " x $level, " chdir $dir/$i failed: $!\n";
 	    }
 	    
-	} elsif ($st->mtime < $since && ($st->atime < $since || $mtime_only)) {
-	    if ($verbose > 0) {
-		print STDERR "$0:", " " x $level, " removing $dir/$i\n";
-	    }
-	    unless ($nop) {
-		if (unlink("$i")) {next}
-		print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!\n";
-	    }
-	} 
+	} else {
+	    my $rtime = $ctime_only ? $st->ctime :
+	                $mtime_only ? $st->mtime :
+			              max($st->mtime, $st->atime);
+	    if ($rtime < $since) {
+		if ($verbose > 0) {
+		    print STDERR "$0:", " " x $level, " removing $dir/$i\n";
+		}
+		unless ($nop) {
+		    if (unlink("$i")) {next}
+		    print STDERR "$0:", " " x $level, " removing $dir/$i failed: $!\n";
+		}
+	    } 
+	}
 	$notremoved++;
     }
     if ($verbose > 1) {
@@ -184,6 +196,7 @@ sub main {
 	       'nop|n' => \$nop,
 	       'skip-fifos|s' => \$skip_fifos,
 	       'mtime-only|m' => \$mtime_only,
+	       'ctime-only|c' => \$ctime_only,
 	       'include|i=s' => sub { push @inex, [ $_[1], 'i' ] },
 	       'exclude|x=s' => sub { push @inex, [ $_[1], 'x' ] },
 	      ) or pod2usage(2);
@@ -204,6 +217,10 @@ sub main {
 main();
 
 # $Log: cleandir.pl,v $
+# Revision 1.10  2012-03-02 11:29:42  hjp
+# (Nov 12  2009)
+# Implemented option -c  Consider only the inode change time of the file.
+#
 # Revision 1.9  2006-08-25 09:57:10  hjp
 # Added --include (-i) and --exclude (-x) options.
 #

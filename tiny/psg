@@ -1,9 +1,0 @@
-#!/bin/sh
-case `uname` in
-Linux)
-    ps auxwwf | grep "$@"
-    ;;
-HP-UX)
-    UNIX95=1 ps -efH | grep "$@"
-    ;;
-esac

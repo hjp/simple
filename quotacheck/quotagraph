@@ -82,7 +82,31 @@ print CTL "set grid\n";
 my $firsttime = ($data[0])->[0];
 my $lasttime = ($data[$#data])->[0];
 
-if ($lasttime - $firsttime > 3 * 30 * 24 * 3600) {
+if ($lasttime - $firsttime > 3 * 365 * 24 * 3600) {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($firsttime);
+    $sec = $min = $hour = 0;
+    $mday = 1;
+    $mon = int($mon/3) * 3;
+    $firsttime = timelocal($sec,$min,$hour,$mday,$mon,$year);
+    print CTL "set xtics rotate (";
+    my $comma = 0;
+    my $time;
+    for (;;) {
+	$time = timelocal($sec,$min,$hour,$mday,$mon,$year);
+	if ($comma) {
+	    print CTL ", ";
+	} else {
+	    $comma = 1;
+	}
+	printf CTL qq|"%04d-%02d-%02d" %d|, $year+1900, $mon+1, $mday, $time;
+	if (($mon += 3) >= 12) {
+	    $mon = 0; $year++;
+	}
+	if ($time > $lasttime) {last}
+    }
+    $lasttime = $time;
+    print CTL ")\n";
+} elsif ($lasttime - $firsttime > 3 * 30 * 24 * 3600) {
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($firsttime);
     $sec = $min = $hour = 0;
     $mday = 1;

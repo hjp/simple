@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.8 2007-02-09 15:36:37 hjp Exp $
+# $Id: agestat.pl,v 1.9 2012-10-22 09:20:05 hjp Exp $
 #
 
 use strict;
@@ -9,7 +9,7 @@ use File::Find;
 use Getopt::Long;
 
 sub usage {
-    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|M)]\n";
+    print STDERR "Usage: $0 [-atime|-mtime] [-scale=(k|M)] [-buckets=(cal|log2)]\n";
     exit 1;
 }
 
@@ -106,6 +106,9 @@ for (my $i = 0; $i <= $#hist; $i++) {
 }
 
 # $Log: agestat.pl,v $
+# Revision 1.9  2012-10-22 09:20:05  hjp
+# fixed usage message
+#
 # Revision 1.8  2007-02-09 15:36:37  hjp
 # Automatically create GNUmakerules and GNUmakevars if they don't exist.
 # Print usage if unknown option is given.

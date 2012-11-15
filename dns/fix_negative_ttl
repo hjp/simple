@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use autodie;
+
+for my $zonefile (@ARGV) {
+    open my $in, '<', $zonefile;
+    open my $out, '>', "$zonefile.$$";
+    while (<$in>) {
+        # @               SOA     ns1.wsr.ac.at. hostmaster.wsr.ac.at. 1957 14400 3600 604800 86400
+        if ( my ($prefix, $master, $rp, $serial, $refresh, $retry, $expire, $negttl)
+                = m/(.*)SOA\s+(\S+)\s+(\S+)\s(\d+)\s(\d+)\s(\d+)\s(\d+)\s(\d+)/
+        ) {
+            # maximum time recommended by RFC 2308, also enforced by
+            # BIND (by default).
+            if ($negttl >= 3 * 3600) {
+                $negttl = 3600;
+                $serial++;
+            }
+            print $out "${prefix}SOA\t$master $rp $serial $refresh $retry $expire $negttl\n";
+        } else {
+            print $out $_;
+        }
+    }
+    rename "$zonefile.$$", $zonefile;
+}
+

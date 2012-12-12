@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     }
     if (!filepat) {
 	fp = stdout;
-	setlinebuf(fp);
+	setvbuf(fp, NULL, _IOLBF, BUFSIZ);
     }
     while ((c = getchar()) != EOF) {
 	if (print_ts) {
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "%s: cannot open %s: %s\n", argv[0], file, strerror(errno));
 			exit(1);
 		    }
-		    setlinebuf(fp);
+		    setvbuf(fp, NULL, _IOLBF, BUFSIZ);
 		    strcpy(lastfile, file);
 		}
 	    }

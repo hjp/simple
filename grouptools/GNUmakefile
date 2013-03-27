@@ -30,7 +30,7 @@ endif
 
 GNUmakevars: GNUmakevars.sh
 	sh ./$^ > $@
-GNUmakerules: GNUmakerules.sh
-	sh ./$^ > $@
+GNUmakerules: GNUmakerules.pl
+	perl ./$^ > $@
 
 include GNUmakerules

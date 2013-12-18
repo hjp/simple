@@ -20,6 +20,11 @@ use strict;
 use DBI;
 use Getopt::Long;
 use Encode qw(:fallbacks encode);
+use I18N::Langinfo qw(langinfo CODESET);
+
+my $charset = langinfo(CODESET);
+binmode STDOUT, "encoding($charset)";
+
 
 my $help;
 my $vertical;	# use vertical output format

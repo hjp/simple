@@ -44,7 +44,7 @@ sub _read_cred {
     open(FN, "<$fn") or die "cannot open $fn: $!";
     my $line = <FN>; 
     close(FN);
-    my @cred = split(/[\s\n]/, $line); 
+    my @cred = split(/\s+/, $line); 
     return @cred;
 }
 

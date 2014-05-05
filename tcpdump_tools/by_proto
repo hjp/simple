@@ -3,26 +3,43 @@ use strict;
 # 15:20:56.789680 P 0:48:54:5c:4d:f1 0:0:0:0:0:1 ip 1514: wsrppp15.wsr.ac.at.1605 > 195.202.170.227.smtp: P 420284195:420285643(1448) ack 3689574287 win 32120 <nop,nop,timestamp 2363951 3391664> (DF)
 my %octets;
 
+my %interesting = (
+    25   => 'smtp',
+    80   => 'http',
+    443  => 'https',
+    5060 => 'lync server frontend service (5060)',
+    5070 => 'lync server mediation service (5070)',
+);
+
 while (<>) {
+    my $octets;
+    my $sport;
+    my $dport;
     if (/([\d.:]+) . ([\w:]+) ([\w:]+) ip (\d+): ([\w.]+)\.(\w+) > ([\w.]+)\.(\w+):/) {
 	# print;
 	# print "-> $1 $2 $3 $4 $5 $6 $7 $8\n";
-	my $octets = $4;
-	my $sport = $6;
-	my $dport = $8;
-	my $proto;
-	if ($sport =~ m/[a-z]/) {
-	    $proto = $sport;
-	}
-	elsif ($dport =~ m/[a-z]/) {
-	    $proto = $dport;
-	}
-	else {
-	    $proto = "$sport/$dport";
-	}
-	# print "-> proto = $proto\n";
-	$octets{$proto} += $octets;
+	$octets = $4;
+	$sport = $6;
+	$dport = $8;
+    } elsif (/(In|Out) ethertype IPv[46] \(0x....\), length (\d+): ([-\w.]+)\.(\w+) > ([-\w.]+)\.(\w+):/) {
+	$octets = $2;
+	$sport = $4;
+	$dport = $6;
+    } else {
+        next;
     }
+    my $proto;
+    if ($interesting{$sport}) {
+        $proto = $interesting{$sport};
+    }
+    elsif ($interesting{$dport}) {
+        $proto = $interesting{$dport};
+    }
+    else {
+        $proto = "$sport/$dport";
+    }
+    # print "-> proto = $proto\n";
+    $octets{$proto} += $octets;
 }
 for my $i (sort { $octets{$a} <=> $octets{$b} } keys %octets) {
     printf "%10d %s\n", $octets{$i}, $i;

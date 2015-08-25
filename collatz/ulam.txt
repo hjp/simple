@@ -1,0 +1,4 @@
+Ich kannte dieses Problem ursprünglich als "Ulams Vermutung".
+
+Laut http://de.wikipedia.org/wiki/Collatz-Problem stammt es aber
+ursprünglich von Lothar Collatz.

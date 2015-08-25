@@ -1,6 +1,6 @@
 #!@@@perl@@@ -w
 #
-# $Id: agestat.pl,v 1.9 2012-10-22 09:20:05 hjp Exp $
+# $Id: agestat.pl,v 1.10 2015-08-25 16:00:39 hjp Exp $
 #
 
 use strict;
@@ -46,6 +46,10 @@ if ($opts{buckets} eq "log2") {
 	4 * 365.2422 * 86400,
 	5 * 365.2422 * 86400,
     );
+} elsif ($opts{buckets} =~ /^days=(\d+)/) {
+    @bucket_max = map $_ * 86400, (1 .. $1);
+} else {
+    usage();
 }
 
 
@@ -106,6 +110,9 @@ for (my $i = 0; $i <= $#hist; $i++) {
 }
 
 # $Log: agestat.pl,v $
+# Revision 1.10  2015-08-25 16:00:39  hjp
+# New bucket type days
+#
 # Revision 1.9  2012-10-22 09:20:05  hjp
 # fixed usage message
 #

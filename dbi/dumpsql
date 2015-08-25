@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl 
+#!/usr/bin/perl 
 
 =head1 NAME
 
@@ -7,11 +7,34 @@ dumpsql - dump output of an SQL query
 =head1 SYNOPSIS
 
 dumpsql
+[ --vertical
+[ --escape ]
+|
+--xhtml
+[ --style uri ]
+]
 query
+
+=head1 DESCRIPTION
 
 Connects to the database identified by the environment variable
 DBI_CREDENTIAL_FILE, executes the query given on the command line and
 prints the output to stdout.
+
+By default the output is tab-separated. Two alternate formats are
+available: 
+
+--vertical prints each field in a separate line in "Columnname: Value"
+format. Rows are separated by empty lines. --Escape escapes unprintable
+characters.
+
+--xhtml prints the table as an XHTML file. Optionally a style sheet can
+be specified with --style.
+
+=head1 BUGS
+
+The --escape option only works with --vertical. It should also work with
+the other two styles.
 
 =cut
 
@@ -21,6 +44,7 @@ use DBI;
 use Getopt::Long;
 use Encode qw(:fallbacks encode);
 use I18N::Langinfo qw(langinfo CODESET);
+use Pod::Usage;
 
 my $charset = langinfo(CODESET);
 binmode STDOUT, "encoding($charset)";
@@ -65,6 +89,11 @@ sub dbiconnect {
     }
 
     $dbh = DBI->connect(_read_cred($cred_file), {RaiseError => 1, AutoCommit => 0}); 
+
+    my $driver = $dbh->{Driver}->{Name};
+    if ($driver eq 'Pg') {
+        $dbh->{pg_enable_utf8} = 1;
+    }
     return $dbh;
 }
 
@@ -129,7 +158,7 @@ if ($xhtml) {
 		    print "NULL\n";
 		}
 	    } else {
-		print "$a[$i]\n";
+		print $a[$i] // "NULL", "\n";
 	    }
 	}
 	print "\n";

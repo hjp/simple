@@ -6,7 +6,7 @@ CONFDIR_exists=$(shell [ -d $(CONFDIR) ] && echo ok)
 all: configure ts
 
 clean:
-	rm -f ts ts.o
+	rm -f ts ts.bx ts.o
 
 install: \
 	$(BINDIR)/ts \

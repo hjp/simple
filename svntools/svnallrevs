@@ -1,0 +1,25 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+push @ARGV, "." unless (@ARGV);
+
+for my $target (@ARGV) {
+    open(my $svnlog_fh, '-|', 'svn', 'log', $target) or die "cannot invoke svn log $target: $!";
+    my $atstart;
+    while (<$svnlog_fh>) {
+        if (/^------------------------------------------------------------------------$/) {
+            $atstart = 1;
+            next;
+        }
+        if ($atstart && /^r(\d+) \| /) {
+            my $revline = $_;
+            chomp $revline;
+            my $revision = $1;
+            system('svn', 'co', "-r$revision", $target, $revision) == 0 or die "cannot invoke svn co -r$revision $target $revision: $!";
+        }
+        $atstart = 0;
+    }
+}
+
+# vim: tw=0

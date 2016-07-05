@@ -5,7 +5,11 @@ all: setperm
 setperm:
 
 clean:
-	rm setperm
+	rm -f setperm
+
+distclean: clean
+	rm -f GNUmakerules GNUmakevars
+
 install: $(BINDIR)/setperm
 
 GNUmakevars: GNUmakevars.sh

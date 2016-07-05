@@ -1,10 +1,18 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+use warnings;
 use strict;
 use Net::DNS;
 
 sub usage {
     print STDERR "Usage: $0 domainname-or-ip-address\n";
     exit(1);
+}
+
+my $verbose;
+
+if (($ARGV[0] || '') eq '-v') {
+    $verbose = 1;
+    shift @ARGV;
 }
 
 usage() unless (@ARGV == 1);
@@ -57,6 +65,7 @@ sub check_ptr {
         return;
     }
     for my $name (@names) {
+	print "I: [$addr] -> $name\n" if $verbose;
         check_a($name, $addr);
     }
 }
@@ -92,6 +101,7 @@ sub check_a {
         return;
     }
     for my $addr (@addrs) {
+	print "I: $name -> [$addr]\n" if $verbose;
         check_ptr($addr, $name);
     }
 }

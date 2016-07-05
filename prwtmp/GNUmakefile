@@ -5,12 +5,11 @@ prwtmp:
 
 install: $(ROOT)/usr/local/bin/prwtmp $(ROOT)/usr/local/man/man8/prwtmp.8
 
-install_all:
-	$(MAKE) install ROOT=/nfs/wsrdb
-	$(MAKE) install ROOT=/nfs/wsrcom
-	$(MAKE) install ROOT=/nfs/wifosv
-	$(MAKE) install ROOT=/nfs/ihssv
-	$(MAKE) install ROOT=/nfs/wsrtest
+clean:
+	rm prwtmp
+
+distclean: clean
+	rm GNUmakerules GNUmakevars
 
 $(ROOT)/usr/local/bin/%: %
 	$(INSTALL) $< $@
@@ -18,8 +17,8 @@ $(ROOT)/usr/local/bin/%: %
 $(ROOT)/usr/local/man/man8/%.8: %.man
 	$(INSTALL) $< $@
 
-clean:
-	rm prwtmp
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.pl
+	perl ./$^ > $@
 
-distclean: clean
-	rm GNUmakerules GNUmakevars

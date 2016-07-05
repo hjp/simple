@@ -1,5 +1,4 @@
 include GNUmakevars
-include GNUmakerules
 
 all: ieeefloat
 install: $(BINDIR)/ieeefloat
@@ -12,4 +11,10 @@ distclean: clean
 
 ieeefloat: ieeefloat.o
 
+GNUmakevars: GNUmakevars.sh
+	sh ./$^ > $@
+GNUmakerules: GNUmakerules.sh
+	sh ./$^ > $@
+
+include GNUmakerules
 -include *.d

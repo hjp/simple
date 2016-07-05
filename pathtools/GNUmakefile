@@ -10,7 +10,7 @@ clean:
 	rm -f $(TARGETS) *.bak core foo bar baz *.ps
 
 distclean: clean
-	rm -f customize
+	rm -f customize GNUmakerules GNUmakevars
 
 install: $(BINDIR) \
     $(BINDIR)/apppath \

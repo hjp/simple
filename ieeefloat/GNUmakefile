@@ -7,7 +7,7 @@ clean:
 	rm -f *.bak *.o core ieeefloat
 
 distclean: clean
-	rm -f *.d
+	rm -f *.d GNUmakerules GNUmakevars
 
 ieeefloat: ieeefloat.o
 

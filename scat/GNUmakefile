@@ -13,6 +13,9 @@ scat.h: scat.en.msg
 clean:
 	rm -f *.cat *.o scat core scat.h
 
+distclean: clean
+	rm -f GNUmakerules GNUmakevars
+
 install: $(BINDIR)/scat
 
 GNUmakevars: GNUmakevars.sh

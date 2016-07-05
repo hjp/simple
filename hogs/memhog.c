@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,6 +9,7 @@ int main(void) {
 
         while (s) {
                 void *p;
+		errno = 0;
                 if (p = malloc(s)) {
 			sum += s;
                         printf("%lu - %lu\n",
@@ -17,6 +19,11 @@ int main(void) {
                         memset(p, 'a', s);
 			s *= 2;
                 } else {
+                        printf("%lu - %lu: %s\n",
+			       (unsigned long)s,
+			       (unsigned long)sum,
+			       strerror(errno)
+			      );
                         s /= 2;
                 }
         }

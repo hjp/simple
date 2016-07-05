@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 	    fprintf(stderr, "Canonical name doesn't contain a dot.\n");
 	    fprintf(stderr, "Please shoot the administrator of this box.\n");
 	    fprintf(stderr, "In the mean time I try to find a suitable alias.\n");
-	    for (a = he->h_aliases; !found && a; a++) {
+	    for (a = he->h_aliases; !found && *a; a++) {
 		if (strchr(*a, '.')) {
 		    printf("%s\n", *a);
 		    found = 1;

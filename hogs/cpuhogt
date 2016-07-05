@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+use v5.20;
+use warnings;
+
+use Time::HiRes qw(time);
+my $t0 = time;
+for (;;) {
+    my $dt = time - $t0;
+    last if $dt > $ARGV[0];
+}

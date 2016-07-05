@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+for my $i (0 .. 255) {
+    print fg(0), bg(15), sprintf("%3d", $i), " : ", bg($i), "x" x 10, rst(), "\n";
+}
+
+
+sub fg {
+    my ($idx) = @_;
+    return "\033[38;5;${idx}m";
+}
+
+sub bg {
+    my ($idx) = @_;
+    return "\033[48;5;${idx}m";
+}
+sub rst {
+    return "\033[0m";
+}

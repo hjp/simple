@@ -1,0 +1,68 @@
+#!/usr/bin/perl -w
+use strict;
+use Net::DNS;
+
+sub usage {
+    print STDERR "Usage: $0 ip-address\n";
+    exit(1);
+}
+
+usage() unless (@ARGV == 1);
+
+# generic resolver
+my $res0 = new Net::DNS::Resolver;
+
+my $ipv4 = $ARGV[0];
+
+my $rev_domain = join(".", reverse (split(/\./, $ipv4)), "in-addr", "arpa");
+print STDERR "$rev_domain\n";
+
+my $reply = $res0->send($rev_domain, 'PTR');
+
+if ($reply->answer) {
+    for my $rr ($reply->answer) {
+        if ($rr->type eq 'PTR') {
+            print STDERR "\t", $rr->ptrdname, "\n";
+            check_a($rr->ptrdname, $ipv4);
+        }
+    }
+} elsif ($reply->authority) {
+    for my $rr ($reply->authority) {
+        if ($rr->type eq 'SOA') {
+            print STDERR "\t", $rr->mname, "\n";
+            my $res1 = Net::DNS::Resolver->new();
+            $res1->nameservers($rr->mname);
+            my @zone = $res1->axfr($rev_domain);
+            for my $rr (@zone) {
+                if ($rr->type eq 'PTR') {
+                    print STDERR "\t\t", $rr->ptrdname, "\n";
+                    my $ipv4 = join(".", (reverse(split(/\./, $rr->name)))[2..5]);
+                    check_a($rr->ptrdname, $ipv4);
+                }
+            }
+        }
+    }
+} else {
+    $reply->print
+}
+
+sub check_a {
+    my ($domain_name, $a) = @_;
+    # check that $domain_name resolves to $a
+
+    my $reply = $res0->send($domain_name, 'A');
+
+    if ($reply->answer) {
+        for my $rr ($reply->answer) {
+            if ($rr->type eq 'A') {
+                print STDERR "\t\t", $rr->address, "\n";
+                if ($rr->address eq $a) {
+                    print STDERR "\t\t\tfound\n";
+                    return 1;
+                }
+            }
+        }
+    }
+    print " $a $domain_name FWD_FAIL\n";
+    return 0;
+}

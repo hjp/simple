@@ -14,7 +14,7 @@ clean:
 install: $(BINDIR)/shuffle
 
 distclean: clean
-	rm -f *.bak *.d
+	rm -f *.bak *.d GNUmakerules GNUmakevars
 
 GNUmakevars: GNUmakevars.sh
 	sh ./$^ > $@

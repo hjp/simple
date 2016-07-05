@@ -1,9 +1,10 @@
 include GNUmakevars
 
-all: gethostbyname fqdn query
+all: gethostbyaddr gethostbyname fqdn query check
 install: \
 	$(BINDIR)/axfr \
 	$(BINDIR)/fqdn \
+	$(BINDIR)/gethostbyaddr \
 	$(BINDIR)/gethostbyname \
 	$(BINDIR)/minnet \
 	$(BINDIR)/query \

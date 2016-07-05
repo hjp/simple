@@ -12,6 +12,7 @@ sub collect {
 	$atime,$mtime,$ctime,$blksize,$blocks) = lstat($_);
     return if $seen{"$dev:$ino"};
     $hist{$size}++;
+    $seen{"$dev:$ino"} = 1;
 }
 
 find(\&collect, @ARGV ? @ARGV : ("."));

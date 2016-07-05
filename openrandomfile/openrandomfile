@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use Time::HiRes qw(time);
+
+chdir "/" or die;
+my $finished;
+
+my $depth = 0;
+while (!$finished) {
+    my $t0 = time;
+    opendir my $dh, ".";
+    my @files = grep !m/^\.\.?$/, readdir($dh);
+    last unless @files;
+    my $file = $files[rand(@files)];
+    if (-d $file) {
+	if (chdir($file)) {
+	    # continue
+	} else {
+	    $finished = 1;
+	}
+    } else {
+	my $buf;
+	if (open (my $fh, '<', $file)) {
+	    read($fh, $buf, 1);
+	}
+	$finished = 1;
+    }
+    my $t1 = time;
+    printf "%2d %s: %g\n", ++$depth, $file, $t1 - $t0;
+}

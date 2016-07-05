@@ -1,5 +1,8 @@
-# $Id: GNUmakefile,v 1.7 2011-01-30 19:41:15 hjp Exp $
+# $Id: GNUmakefile,v 1.8 2016-07-05 19:52:03 hjp Exp $
 # $Log: GNUmakefile,v $
+# Revision 1.8  2016-07-05 19:52:03  hjp
+# Add target distclean
+#
 # Revision 1.7  2011-01-30 19:41:15  hjp
 # Replaced GNUmakerules.sh with GNUmakerules.pl because Debian now uses a
 # /bin/sh which doesn't understand echo -e.
@@ -30,6 +33,9 @@ errno_list.c: errno.list make_errno_list
 
 clean:
 	rm errno
+
+distclean: clean
+	rm -f GNUmakevars GNUmakerules errno_list.c
 
 install: $(BINDIR)/errno
 

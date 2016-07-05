@@ -12,10 +12,10 @@ install: \
 
 
 clean:
-	rm -f *.bak *.o core gethostbyname
+	rm -f *.bak *.o core gethostbyaddr gethostbyname fqdn check
 
 distclean: clean
-	rm -f *.d
+	rm -f *.d GNUmakevars GNUmakerules
 
 cfg/%:
 	$(MAKE) -C cfg all

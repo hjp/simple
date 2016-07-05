@@ -5,7 +5,10 @@ BINDIR=/usr/local/bin
 all: agestat
 
 clean:
-	rm agestat customize
+	rm -f agestat customize
+
+distclean: clean
+	rm -f GNUmakevars GNUmakerules
 
 install: $(BINDIR) $(BINDIR)/agestat
 

@@ -1,35 +1,23 @@
 #!/usr/bin/perl -w
 use strict;
-# 15:20:56.789680 P 0:48:54:5c:4d:f1 0:0:0:0:0:1 ip 1514: wsrppp15.wsr.ac.at.1605 > 195.202.170.227.smtp: P 420284195:420285643(1448) ack 3689574287 win 32120 <nop,nop,timestamp 2363951 3391664> (DF)
-# 09:29:10.114541  In ethertype IPv4 (0x0800), length 457: 199.19.109.76.5070 > 143.130.145.221.5060: SIP, length: 413
-# 09:29:10.114541 Out ethertype IPv4 (0x0800), length 457: 199.19.109.76.5070 > 143.130.145.221.5060: SIP, length: 413
-# 09:29:10.114541  In ethertype IPv4 (0x0800), length 60: 46.137.105.92.80 > 143.130.28.14.29878: Flags [S.], seq 790291952, ack 2509176833, win 17922, options [mss 1436], length 0
-# 09:29:10.114541 Out ethertype IPv4 (0x0800), length 60: 46.137.105.92.80 > 143.130.28.14.29878: Flags [S.], seq 790291952, ack 2509176833, win 17922, options [mss 1436], length 0
-
+# 01:06:43.508117 00:00:24:d0:61:81 > 00:0e:0c:a9:5d:a4, ethertype IPv4 (0x0800), length 58: 93.174.93.51.35728 > 143.130.45.7.16719: Flags [S], seq 72688474, win 65535, options [mss 1436], length 0
 my %octets;
 
 while (<>) {
-    if (/([\d.:]+) ([\w:]+) ([\w:]+) ip (\d+): ([-\w.]+)\.(\w+) > ([-\w.]+)\.(\w+):/) {
-        # ethernet
-	# print;
-	# print "-> $1 $2 $3 $4 $5 $6 $7 $8\n";
-	my $octets = $4;
-	my $sip = $5;
-	my $sport = $6;
-	my $dip = $7;
-	my $dport = $8;
-	# print "-> proto = $proto\n";
-	$octets{"$sip - $dip"} += $octets;
-    } elsif (/(In|Out) ethertype IPv[46] \(0x....\), length (\d+): ([-\w.]+)\.(\w+) > ([-\w.]+)\.(\w+):/) {
-        # GRE tunnel
-	my $octets = $2;
-	my $sip = $3;
-	my $sport = $4;
-	my $dip = $5;
-	my $dport = $6;
-	# print "-> proto = $proto\n";
-	$octets{"$sip - $dip"} += $octets;
-
+    if (/ethertype\ IPv4\ \(0x0800\), \s
+         length\ (?<octets>\d+): \s
+         (?<sip> \d+\.\d+\.\d+\.\d+) .*?
+         > \s
+         (?<dip> \d+\.\d+\.\d+\.\d+) .*?
+        /x) {
+	$octets{"$+{sip} - $+{dip}"} += $+{octets};
+    } elsif (/ethertype\ IPv6\ \(0x86dd\), \s
+         length\ (?<octets>\d+): \s
+         (?<sip> [0-9a-f:]+) .*?
+         > \s
+         (?<dip> [0-9a-f:]+) .*?
+        /x) {
+	$octets{"$+{sip} - $+{dip}"} += $+{octets};
     }
 }
 for my $i (sort { $octets{$a} <=> $octets{$b} } keys %octets) {

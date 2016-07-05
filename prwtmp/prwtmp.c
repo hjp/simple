@@ -1,9 +1,12 @@
 char prwtmp_c_rcs_id[] = 
-	"$Id: prwtmp.c,v 1.2 1998-05-28 16:18:21 hjp Exp $";
+	"$Id: prwtmp.c,v 1.3 2016-07-05 19:13:09 hjp Exp $";
 /*
  * prwtmp - print wtmp to stdout
  *
  * $Log: prwtmp.c,v $
+ * Revision 1.3  2016-07-05 19:13:09  hjp
+ * Adapt to modern linux utmp structure: microsecond timestamps, IPv6
+ *
  * Revision 1.2  1998-05-28 16:18:21  hjp
  * use GNUmakerules/GNUmakevars for CC and INSTALL.
  * Bug fix: initial offset wasn't initialized
@@ -16,9 +19,11 @@ char prwtmp_c_rcs_id[] =
  */
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <time.h>
 
 #include <sys/types.h>
@@ -30,6 +35,28 @@ char *cmnd;
 void usage(void) {
 	fprintf(stderr, "Usage: %s [-o] [-s start] [file]\n", cmnd);
 	exit(1);
+}
+
+
+/* The address is declared as a int32_t[], but it's really just an array
+ * of bytes
+ */
+
+void print_addr(void *p, size_t sz) {
+        uint8_t *pp = p;
+        if (sz == 4) {
+                /* assume ipv4 */
+                char buf[16];
+                snprintf(buf, sizeof(buf), "%d.%d.%d.%d", pp[0], pp[1], pp[2], pp[3]);
+                printf("%-*s ", sizeof(buf), buf);
+        } else {
+                /* assume ipv6 */
+                for (int i = 0; i < sz; i += 2) {
+                        if (i > 0) printf(":");
+                        printf("%02x%02x", pp[i], pp[i+1]);
+                }
+                printf(" ");
+        }
 }
 
 
@@ -81,7 +108,7 @@ int main (int argc, char **argv) {
 
 		strftime(tbuf, (int)sizeof(tbuf), "%Y-%m-%d %H:%M:%S",
 		         localtime(&u.ut_time));
-		printf("%s ", tbuf);
+		printf("%s.%06d ", tbuf, (int)u.ut_tv.tv_usec);
 		printf("%-*.*s ",
 		       (int)sizeof(u.ut_user),
 		       (int)sizeof(u.ut_user),
@@ -102,9 +129,12 @@ int main (int argc, char **argv) {
 		       (int)sizeof(u.ut_host),
 		       (int)sizeof(u.ut_host),
 		       u.ut_host);
-		printf("%08lx", (unsigned long)u.ut_addr);
+		// printf("%08lx ", (unsigned long)u.ut_addr);
+                print_addr(u.ut_addr_v6, sizeof(u.ut_addr_v6));
+		printf("%10ld ", (long)u.ut_session); // either long or int32_t, so 10 digits should be enough
 		printf("\n");
 		
 	}
 	return 0;
 }
+// vim: tw=132 sw=8

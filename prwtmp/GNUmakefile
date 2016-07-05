@@ -20,3 +20,6 @@ $(ROOT)/usr/local/man/man8/%.8: %.man
 
 clean:
 	rm prwtmp
+
+distclean: clean
+	rm GNUmakerules GNUmakevars

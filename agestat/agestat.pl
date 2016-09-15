@@ -58,6 +58,7 @@ my @hist;
 sub wanted {
 
     my $st = lstat($_);
+    return unless $st;
     my $age = $now - (
 	$opts{atime} ? $st->atime :
 	$opts{mtime} ? $st->mtime :

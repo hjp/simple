@@ -1,5 +1,5 @@
 #!/bin/sh
 echo "\$(BINDIR)/%: %"
-echo -e "\tcp \$^ \$@"
+echo "	cp \$^ \$@"
 echo "\$(MAN1DIR)/%: %"
-echo -e "\tcp \$^ \$@"
+echo "	cp \$^ \$@"

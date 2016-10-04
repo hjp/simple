@@ -97,6 +97,10 @@ sub cleandir {
 	    print STDERR "$0:", " " x $level, " checking $dir/$i\n";
 	}
 	my $st = lstat("$i");
+        if (!defined($st)) {
+            # file has vanished
+            next;
+        }
 
 	my $action = 'i';
 	# Skip anything on a different filesystem

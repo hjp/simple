@@ -1,2 +1,14 @@
-#!/bin/sh
-date '+%Y-%m-%dT%H:%M:%S'
+#!/usr/bin/perl
+use v5.10;
+use warnings;
+use strict;
+use Getopt::Long;
+use POSIX qw(strftime);
+use Pod::Usage;
+my $mssafe;
+GetOptions(
+    "mssafe" => \$mssafe
+) or pod2usage(1);
+
+my $fmt = $mssafe ? "%Y-%m-%dT%H-%M-%S" : "%Y-%m-%dT%H:%M:%S";
+say strftime($fmt, localtime);

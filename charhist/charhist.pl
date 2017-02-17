@@ -21,7 +21,7 @@ if (@ARGV) {
 binmode STDOUT, ":encoding(UTF-8)";
 for (sort keys %hist) {
     my $cp = ord;
-    printf("%x %d %o %s\t%d\n", $cp, $cp, $cp, /\p{Graph}/ ? $_ : ".", $hist{$_});
+    printf("%x\t%d\t%o\t%s\t%d\n", $cp, $cp, $cp, /\p{Graph}/ ? $_ : ".", $hist{$_});
 }
 
 sub readfile {

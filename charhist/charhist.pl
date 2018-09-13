@@ -1,11 +1,13 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Getopt::Long;
-use Pod::Usage;
 use autodie;
 
-my $encoding;
+use Getopt::Long;
+use I18N::Langinfo qw(langinfo CODESET);
+use Pod::Usage;
+
+my $encoding = langinfo(CODESET);
 
 GetOptions('encoding=s', \$encoding) or pod2usage();
 
@@ -22,7 +24,7 @@ $total += $_ for values %hist;
 binmode STDOUT, ":encoding(UTF-8)";
 for (sort keys %hist) {
     my $cp = ord;
-    printf("%x %d %o %s\t%8d %f\n",
+    printf("%x\t%d\t%o\t%s\t%7d\t%f\n",
            $cp, $cp, $cp, /\p{Graph}/ ? $_ : ".", $hist{$_}, $hist{$_} / $total);
 }
 

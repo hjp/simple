@@ -38,6 +38,12 @@ Print a complete variable assignment statement ready to be eval'd by a
 POSIX shell. Unlike the C<-e> option this  does not prepend the export
 keyword, so the variable is private unless it is exported elsewhere.
 
+=item B<-r>
+
+Reverse order of arguments. This is useful if you have several versions
+of a software installed and you want the one with the highest version
+number first in your path.
+
 =back
 
 =head1 AUTHOR
@@ -54,11 +60,13 @@ my $debug;
 my $var = 'PATH';
 my $export;
 my $private;
+my $reverse;
 GetOptions("check"   => \$check,
            "debug"   => \$debug,
            "var=s"   => \$var,
            "export"  => \$export,
            "private" => \$private,
+           "reverse" => \$reverse,
           ) or do {
                 require Pod::Usage;
                 import Pod::Usage;
@@ -70,6 +78,10 @@ my @path = split(/:/, $path);
 
 if ($#ARGV == 0 && $ARGV[0] =~ /:/) {
     @ARGV = split(/:/, $ARGV[0]);
+}
+
+if ($reverse) {
+    @ARGV = reverse @ARGV;
 }
 
 my %seen;

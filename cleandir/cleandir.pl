@@ -85,8 +85,8 @@ sub cleandir {
 	print STDERR "$0:", " " x $level, " cleandir $dir $since {\n";
     }
     if (!opendir(DIR, ".")) {
-	printf STDERR "$0:", " " x $level, " cannot opendir $dir: $!";
-	return;
+	print STDERR "$0:", " " x $level, " cannot opendir $dir: $!\n";
+	return 0;
     }
     my $std = lstat(".");
     my $fs = $std->dev;

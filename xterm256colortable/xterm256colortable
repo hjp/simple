@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 for my $i (0 .. 255) {
-    print fg(0), bg(15), sprintf("%3d", $i), " : ", bg($i), "x" x 10, rst(), "\n";
+    print fg(0), bg(15), sprintf("%3d", $i), " : ", bg($i), "x" x 10, rst(), "  ",  fg($i), "x" x 10, rst(), "\n";
 }
 
 

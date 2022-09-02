@@ -22,7 +22,7 @@ cfg/%:
 
 gethostbyname: gethostbyname.o hstrerror.o
 
-fqdn: fqdn.o hstrerror.o
+fqdn: fqdn.pl
 
 hstrerror.o: cfg/have_hstrerror.h
 

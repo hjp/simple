@@ -48,6 +48,8 @@ if ($opts{buckets} eq "log2") {
     );
 } elsif ($opts{buckets} =~ /^days=(\d+)/) {
     @bucket_max = map $_ * 86400, (1 .. $1);
+} elsif ($opts{buckets} =~ /^hours=(\d+)/) {
+    @bucket_max = map $_ * 3600, (1 .. $1);
 } else {
     usage();
 }

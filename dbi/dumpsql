@@ -55,6 +55,7 @@ my $vertical;	# use vertical output format
 my $escape;	# escape non-printable characters
 my $xhtml;	# produce XHTML output
 my $style;	# produce XHTML output
+my $separator;  # if set, produce CSV with this separator and double-quoted fields
 
 GetOptions(
     'help|?'	=> \$help, 
@@ -62,6 +63,7 @@ GetOptions(
     'xhtml'	=> \$xhtml, 
     'escape'	=> \$escape, 
     'style:s'	=> \$style, 
+    'separator:s' => \$separator,
 ) || pod2usage(2);
 pod2usage(1) if $help;
 
@@ -162,6 +164,18 @@ if ($xhtml) {
 	    }
 	}
 	print "\n";
+    }
+} elsif ($separator) {
+    no warnings 'uninitialized';
+    print join($separator, @{$sth->{NAME}}), "\n";
+    while (my @a = $sth->fetchrow_array()) {
+        for (@a) {
+            if (/[$separator"]/) {
+                s/"/""/g;
+                s/.*/"$&"/;
+            }
+        }
+        print join($separator, @a), "\n";
     }
 } else {
     no warnings 'uninitialized';
